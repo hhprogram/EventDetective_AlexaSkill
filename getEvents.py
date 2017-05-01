@@ -72,7 +72,7 @@ key (in outer most dict): 'events' - a dictionary with a single key 'event'
 
 """
 
-def get_time_period(time_period):
+def get_time_period(time_period=None):
     """
     Helper method that will be called in the onIntent method when matching if user says 'this week'
     or 'this weekend' etc..
@@ -84,7 +84,10 @@ def get_time_period(time_period):
 
     Returns:
         Tuple (start date, end date) (date objects)
+        if argument left as None then returns the time periods that are currently supported
     """
+    if not time_period:
+        return ['this week through sunday', 'all of next week', 'from today to end of month']
     today = datetime.date.today()
     weekday = today.weekday()
     if time_period == "this_week":
@@ -311,6 +314,14 @@ class EventQuery():
         self._next_page(domain)
         self.query_url(domain)
 
+    def get_titles(self, domain):
+        """
+        Returns:
+            list of titles of the events in self.INFO[DOMAIN]. ie return list of event titles that
+            have been found via that domain's api
+        """
+        event_titles = [event[title_key] for event in self.info[domain]]
+        return event_titles
 
     def write_output(self, domain):
         """
