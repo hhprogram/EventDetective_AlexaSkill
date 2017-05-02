@@ -36,8 +36,12 @@ def attr_check():
     if not session.attributes:
         return False
     for attr in attr_lst:
-        if session.attributes[attr] == None:
-            return False
+        if attr == cat_attr:
+            if attr not in session.attributes:
+                return False
+        else:
+            if attr not in session.attributes or session.attributes[attr] == None:
+                return False
     return True
 
 @app.route('/WhatsGood')
@@ -193,14 +197,17 @@ def all_info(timePeriod, cat, catTwo, catThree, catFour, catFive, number, City, 
         return question(response)
     else:
         print("should")
-        for attr in attr_lst:
-            if session.attributes[attr] == None:
-                session.attributes[last_attr] = attr
-                pass_intent(all_info_call=True)
+        fill_missing_pieces()
         if not attr_check():
             logging.debug("Something is wrong in AllInfoIntent")
         response = alexa_response()
         return question(response)
+
+def fill_missing_pieces():
+    for attr in attr_lst:
+        if session.attributes[attr] == None:
+            session.attributes[last_attr] = attr
+            pass_intent(all_info_call=True)
 
 def alexa_response():
     params = session.attributes
