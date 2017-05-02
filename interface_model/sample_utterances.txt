@@ -14,7 +14,8 @@ ListAvailableCategoriesIntent What are the possible categories
 ListAvailableCategoriesIntent What are they
 CategoryIntent no filtering
 CategoryIntent no
-CategoryIntent {cat}
+CategoryIntent search for {cat} events
+CategoryIntent search for {cat} and {catTwo} events
 CategoryIntent {cat} {catTwo} 
 CategoryIntent {cat} {catTwo} {catThree}
 CategoryIntent {cat} {catTwo} {catThree} {catFour}
@@ -24,4 +25,5 @@ CategoryIntent {cat} and {catTwo} and {catThree} and {catFour}
 RadiusIntent Within {number} miles
 RadiusIntent {number} mile radius
 RadiusIntent {number} miles away
+RadiusIntent {number} miles
 RadiusIntent no more than {number} miles

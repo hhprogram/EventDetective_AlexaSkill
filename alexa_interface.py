@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from flask_ask import Ask, statement, question, session
 import json
 import logging
+import datetime
 from getEvents import EventQuery, get_time_period, get_categories, build_eventful_url
 
 app = Flask(__name__)
@@ -30,44 +31,49 @@ def city_intent(City, State):
     aval_periods_str = get_time_period()
     return question(render_template("timeQ", aval_time_periods=aval_periods_str))
 
-
+# note: needed to change the date objects returns by get_time_period to strings because the
+# attributes for a flask_ask session need to be JSON serializable and date objects are not
 @ask.intent("TimePeriodIntent")
 def time_period(timePeriod):
-    session.attributes['time'] = get_time_period(timePeriod)
+    date_tuple = get_time_period(timePeriod)
+    session.attributes['time'] = (str(date_tuple[0]), str(date_tuple[1]))
     return question(render_template('categoryQ'))
 
+# adding "..." between each category to make Alexa pause in between categories. Also, Alexa knows 
+# how to say the special character &amp;
 @ask.intent("ListAvailableCategoriesIntent")
 def category():
     aval_categories = get_categories()
-    cat_str = "These are the available categories to choose from ..." + " ".join(aval_categories) \
+    cat_str = "These are the available categories to choose from ..." + "...".join(aval_categories)\
         + ". Which one or ones would you like to choose to include or exclude?"
     return question(render_template("categorylist", categories=cat_str))
 
-def str_to_list(categories):
-    cat_lst = categories.split(",")
-    if cat_lst == 'no':
-        return None
-    return cat_lst
-
-
-@ask.intent("CategoryIntent", convert={'categories': str_to_list})
+@ask.intent("CategoryIntent")
 def filter_category(cat, catTwo, catThree, catFour, catFive):
-    if categories:
-        session.attributes['cat'] = categories
-    else:
-        session.attributes['cat'] = None
+    final_cat = ""
+    cat_list = [cat, catTwo, catThree, catFour, catFive]
+    for cat_element in cat_list:
+        if cat_element:
+            final_cat += cat_element + ","
+    session.attributes['cat'] = final_cat
     return question(render_template("radiusQ"))
 
 @ask.intent("RadiusIntent")
-def radius(dis):
-    session.attributes['radius'] = dis
+def radius(number):
+    session.attributes['radius'] = number
     params = session.attributes
     if 'city' in params and 'time' in params and 'cat' in params and 'radius' in params:
+        date_start_str = session.attributes['time'][0].split("-")
+        date_end_str = session.attributes['time'][1].split("-")
+        date_start = datetime.date(int(date_start_str[0]), int(date_start_str[1])
+            , int(date_start_str[2]))
+        date_end = datetime.date(int(date_end_str[0]), int(date_end_str[1])
+            , int(date_end_str[2]))
         url = build_eventful_url(params['city'], mile_radius=params['radius']
-            , date_start=params['time'][0], date_end=params['time'][1], cat=params['cat'])
+            , date_start=date_start, date_end=date_end, cat=params['cat'])
         eventquery.add_query(url)
         eventquery.query_url(api_domain)
-        lst = eventquery.get_titles(api_domain)
+        lst = eventquery.get_overview(api_domain)
         return question(render_template("response", events=lst))
 
 if __name__ == "__main__":

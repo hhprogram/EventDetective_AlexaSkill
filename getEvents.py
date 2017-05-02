@@ -52,6 +52,7 @@ latitude_key = "latitude"
 longitude_key = "longitude"
 region_key = "region_abbr"
 postal_key = "postal_code"
+name_key = "name"
 
 
 """
@@ -90,17 +91,17 @@ def get_time_period(time_period=None):
         return ['this week through sunday', 'all of next week', 'from today to end of month']
     today = datetime.date.today()
     weekday = today.weekday()
-    if time_period == "this_week":
+    if time_period == "this week":
         date_start = today
         delta = datetime.timedelta(days=(6-weekday))
         date_end = today + delta
         return (date_start, date_end)
-    elif time_period == "next_week":
+    elif time_period == "next week":
         delta_to_mon = 7 - weekday
         date_start = today + datetime.timedelta(days=delta_to_mon)
         date_end = date_start + datetime.timedelta(days=6)
         return (date_start, date_end)
-    elif time_period == "this_month":
+    elif time_period == "this month":
         copy_today = datetime.date(today.year, today.month, today.day)
         date_start = today
         next_month = copy_today.replace(day=28) + datetime.timedelta(days=4)
@@ -124,7 +125,7 @@ def get_categories():
     json_output = json.loads(response.read().decode('utf-8'))
     categories = []
     for cat in json_output[cat_key]:
-        categories.append(cat[id_key])
+        categories.append(cat[name_key])
 
     return sorted(categories)
 
@@ -151,7 +152,7 @@ def build_eventful_url(city, mile_radius=25, page_size=10, sort_order=sort_optio
         # add the trailing 0's to get into the eventful api format
         date_start_str = str(date_start.year) + str(date_start.month) + str(date_start.day) + "00"
         date_end_str = str(date_end.year) + str(date_end.month) + str(date_end.day) + "00"
-        date_field = date_start_str + "-" + date_end_str + keyword_url + keyword + page_number + "1"
+        date_field = date_start_str + "-" + date_end_str
     if cat:
         cat_query = category_url
         if excl_cat:
@@ -175,7 +176,7 @@ def build_eventful_url(city, mile_radius=25, page_size=10, sort_order=sort_optio
     clean_city = city.replace(" ","+")
     search_url = (event_search_base_url + loc_url + clean_city + within_url + str(mile_radius) + \
          api_key + events_per_pg_url + str(page_size) + sort_url + sort_order + cat_query + \
-         category + date_url + date_field)
+         category + date_url + date_field + keyword_url + keyword + page_url + "1")
     return search_url, fields
 
 def get_events(url):
@@ -222,8 +223,8 @@ def get_event_details(event):
     details[description_key] = event[description_key]
     location['lon'] = event[longitude_key]
     location['lat'] = event[latitude_key]
-    location['full_address'] = event[venue_addr_key] + ", " + event[city_key] + ", " \
-        + event[region_key] + ", " + event[postal_key]
+    # location['full_address'] = event[venue_addr_key] + ", " + event[city_key] + ", " \
+    #     + event[region_key] + ", " + event[postal_key]
     if not event[venue_addr_key] or not event[city_key] or not event[region_key] \
         or not event[postal_key]:
         location['complete'] = True
@@ -231,7 +232,7 @@ def get_event_details(event):
         location['complete'] = False
     return general
 
-def get_page(self, url):
+def get_page(url):
     """
     gets the page number from this url
     """
@@ -241,6 +242,22 @@ def get_page(self, url):
         pos = url.find(page_url)
         page = int(url[pos+len(page_url):])
         return page
+
+def find_duplicates(lst):
+    """
+    Returns:
+        a set of duplicates found in the iterable lst
+    """
+    unique = set()
+    dup = set()
+    for el in lst:
+        if el not in unique:
+            unique.add(el)
+        else:
+            dup.add(el)
+    return dup
+
+
 
 
 class EventQuery():
@@ -314,14 +331,44 @@ class EventQuery():
         self._next_page(domain)
         self.query_url(domain)
 
-    def get_titles(self, domain):
+    def get_titles(self, domain, with_dots=False):
         """
+        Args:
+            DOMAIN: the domain of which these events were taken from
+            WITH_DOTS: True is we want to add "..." inbetween each individual title to help Alexa
+                with rate of speech
         Returns:
             list of titles of the events in self.INFO[DOMAIN]. ie return list of event titles that
             have been found via that domain's api
         """
-        event_titles = [event[title_key] for event in self.info[domain]]
+        # print(type(self.info[domain]))
+        # print(self.info[domain].keys())
+        dom = self.info[domain]
+        
+        if with_dots:
+            event_titles = []
+            count = 0
+            for event in dom:
+                if count % 2 == 0:
+                    event_titles.append(dom[event]['overview'][title_key])
+                    count+=1
+                else:
+                    event_titles.append("...")
+                    count+=1
+        else:
+            event_titles = [dom[event]['overview'][title_key] for event in dom]
         return event_titles
+
+    def get_overview(self, domain):
+        dom = self.info[domain]
+        events = []
+        titles = self.get_titles(domain)
+        # duplicates = find_duplicates(titles)
+        for event in dom:
+            overview = dom[event]['overview']
+            events.append(overview[title_key] + " starts " + overview[start_key] + "...")
+        return events
+
 
     def write_output(self, domain):
         """
