@@ -1,0 +1,33 @@
+{
+  "intents": [
+    {
+      "intent": "GetHoroscope",
+      "slots": [
+        {
+          "name": "Sign",
+          "type": "AMAZON.US_CITY"
+        },
+        {
+          "name": "Date",
+          "type": "AMAZON.DATE"
+        }
+      ]
+    },
+    {
+      "intent": "MatchSign",
+      "slots": [
+        {
+          "name": "FirstSign",
+          "type": "AMAZON.US_CITY"
+        },
+        {
+          "name": "SecondSign",
+          "type": "AMAZON.US_CITY"
+        }
+      ]
+    },
+    {
+      "intent": "GetLuckyNumbers"
+    }
+  ]
+}

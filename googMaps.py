@@ -115,10 +115,10 @@ def build_url(start, end, transit_mode):
 
 
 
-# then i decode the bytes into a JSON formated STR which i then load into a JSON object using
-# the loads() method. acts like a JSON object in which it is a dictionary and can refer to its 
-# keys and the value is the corresponding value in the JSON response. Remember the values 
-# in a JSON response are always str
-json_output = json.loads(response.read().decode('utf-8'))
-print(json_output.keys())
-print(len(json_output['routes'][0]['legs']))
+# # then i decode the bytes into a JSON formated STR which i then load into a JSON object using
+# # the loads() method. acts like a JSON object in which it is a dictionary and can refer to its 
+# # keys and the value is the corresponding value in the JSON response. Remember the values 
+# # in a JSON response are always str
+# json_output = json.loads(response.read().decode('utf-8'))
+# print(json_output.keys())
+# print(len(json_output['routes'][0]['legs']))

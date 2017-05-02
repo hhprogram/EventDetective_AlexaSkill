@@ -1,0 +1,6 @@
+welcome: "What's good with you?...Let's begin either say the interested city and state or say all info in one statement"
+timeQ: "What time frame would you like to choose from? {{ aval_time_periods }}"
+categoryQ: "Do you want to filter on category types? Say no or list categories"
+categorylist: "These are the categories you can choose from: {{ categories }}"
+radiusQ: "What mile radius would you like to search within?"
+response: "These are the top 10 events: {% for event in events %} {{ event }} {% endfor %}"

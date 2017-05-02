@@ -1,0 +1,71 @@
+// multiple slots for city intent means there are possible going to 
+// be multiple different variables to launch this intent
+// slot names can only alpha characters or '_'
+{
+  "intents": [
+    {
+      "intent": "ListAvailableCategoriesIntent"
+    },
+    {
+      "intent": "RadiusIntent",
+      "slots": [
+        {
+          "name": "number",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
+      "intent": "CategoryIntent",
+      "slots": [
+        {
+          "name": "cat",
+          "type": "EVENT_CAT"
+        },
+        {
+          "name": "catTwo",
+          "type": "EVENT_CAT"
+        },
+        {
+          "name": "catThree",
+          "type": "EVENT_CAT"
+        },
+        {
+          "name": "catFour",
+          "type": "EVENT_CAT"
+        },
+        {
+          "name": "catFive",
+          "type": "EVENT_CAT"
+        }
+      ]
+    },
+    {
+      "intent": "CityIntent",
+      "slots" : [
+        {
+          "name": "City",
+          "type": "AMAZON.US_CITY"
+        },
+        {
+          "name": "State",
+          "type": "AMAZON.US_STATE"
+        }
+      ]
+    },
+     {
+      "intent": "TimePeriodIntent",
+      "slots" : [
+        {
+          "name": "timePeriod",
+          "type": "TIMEPERIODS"
+        }
+      ]
+    },{
+      "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "AMAZON.StopIntent"
+    }
+  ]
+}

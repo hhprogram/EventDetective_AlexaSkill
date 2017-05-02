@@ -1,0 +1,27 @@
+#note (don't add) - commas cause parse errors (actually i think any type of punctuation except for
+#Valid punctuation marks are periods for abbreviations, possesive apostrophes and hyphens
+CityIntent {City} {State}
+CityIntent How about {City} {State}
+CityIntent What's good in {City} {State}
+CityIntent What's happening in {City} {State}
+TimePeriodIntent {timePeriod}
+TimePeriodIntent I'm interested in {timePeriod}
+TimePeriodIntent What's good {timePeriod}
+TimePeriodIntent How about {timePeriod}
+ListAvailableCategoriesIntent Can you list the categories
+ListAvailableCategoriesIntent What are the categories
+ListAvailableCategoriesIntent What are the possible categories
+ListAvailableCategoriesIntent What are they
+CategoryIntent no filtering
+CategoryIntent no
+CategoryIntent {cat}
+CategoryIntent {cat} {catTwo} 
+CategoryIntent {cat} {catTwo} {catThree}
+CategoryIntent {cat} {catTwo} {catThree} {catFour}
+CategoryIntent {cat} and {catTwo} 
+CategoryIntent {cat} and {catTwo} and {catThree}
+CategoryIntent {cat} and {catTwo} and {catThree} and {catFour}
+RadiusIntent Within {number} miles
+RadiusIntent {number} mile radius
+RadiusIntent {number} miles away
+RadiusIntent no more than {number} miles

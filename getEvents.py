@@ -224,7 +224,7 @@ def get_event_details(event):
     location['lat'] = event[latitude_key]
     location['full_address'] = event[venue_addr_key] + ", " + event[city_key] + ", " \
         + event[region_key] + ", " + event[postal_key]
-    if not event[venue_addr_key] or not event[city_key] or not event[region_key] 
+    if not event[venue_addr_key] or not event[city_key] or not event[region_key] \
         or not event[postal_key]:
         location['complete'] = True
     else:
@@ -416,13 +416,18 @@ if __name__ == "__main__":
     # city = input("What city do you what to look for events:")
     # events = get_events(city)
     # output = get_events("Indio", cat=["music"])
-    question = EventQuery()
-    query = build_eventful_url("Berkeley", cat=["music", "sports","family_fun_kids"])
-    question.add_query(query)
-    question.query_all_urls()
-    question.write_output(eventful)
-    event_id = question.find_event_id(eventful, "Willie Nelson & Family")
-    question.write_detail(eventful, event_id)
+    # question = EventQuery()
+    # query = build_eventful_url("Berkeley", cat=["music", "sports","family_fun_kids"])
+    # question.add_query(query)
+    # question.query_all_urls()
+    # question.write_output(eventful)
+    # event_id = question.find_event_id(eventful, "Willie Nelson & Family")
+    # question.write_detail(eventful, event_id)
     # print(question.urls)
     # print(question.api_gets)
     # print(question.info)
+    lst = get_categories()
+    with open("categories.txt", "w") as f:
+        for cat in lst:
+            f.write(cat)
+            f.write("\n")
