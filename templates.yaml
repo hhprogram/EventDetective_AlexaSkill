@@ -1,6 +1,17 @@
-welcome: "What's good with you?...Let's begin either say the interested city and state or say all info in one statement"
+# note the ">" character allows me to break up the templates into mult-lines. if do that then need
+# to take away the double quotes and then need to start at the next line and then use 2 spaces
+welcome: >
+  What's good with you?...Let's begin ... you can either go through our Q and A process by 
+  responding with the city and state you are interested in or say help
+help: > 
+  You can bypass the Q and A process by saying city, state, mile radius, category, time period
+  all in one sentence ... OR you can say something like What's good in New York, New York and the
+  rest of the fields will be set to some defaults...go ahead and try it now!
 timeQ: "What time frame would you like to choose from? {{ aval_time_periods }}"
 categoryQ: "Do you want to filter on category types? Say no or list categories"
 categorylist: "These are the categories you can choose from: {{ categories }}"
 radiusQ: "What mile radius would you like to search within?"
 response: "These are the top 10 events: {% for event in events %} {{ event }} {% endfor %}"
+missedCity: "I'm sorry, I didn't seem to get the city you wanted. Can you please repeat it?"
+testResponse: "hello there"
+restart: "Lets start again ... say everything at once or just the city and state"

@@ -154,6 +154,7 @@ def build_eventful_url(city, mile_radius=25, page_size=10, sort_order=sort_optio
         date_end_str = str(date_end.year) + str(date_end.month) + str(date_end.day) + "00"
         date_field = date_start_str + "-" + date_end_str
     if cat:
+        print(cat)
         cat_query = category_url
         if excl_cat:
             category = ','.join(cat)

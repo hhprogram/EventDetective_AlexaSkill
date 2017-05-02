@@ -7,6 +7,50 @@
       "intent": "ListAvailableCategoriesIntent"
     },
     {
+      "intent": "ResponseIntent"
+    },
+    {
+      "intent": "AllInfoIntent",
+      "slots": [
+        {
+          "name": "number",
+          "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "City",
+          "type": "AMAZON.US_CITY"
+        },
+        {
+          "name": "State",
+          "type": "AMAZON.US_STATE"
+        },
+        {
+          "name": "timePeriod",
+          "type": "TIMEPERIODS"
+        },
+        {
+          "name": "cat",
+          "type": "EVENT_CAT"
+        },
+        {
+          "name": "catTwo",
+          "type": "EVENT_CAT"
+        },
+        {
+          "name": "catThree",
+          "type": "EVENT_CAT"
+        },
+        {
+          "name": "catFour",
+          "type": "EVENT_CAT"
+        },
+        {
+          "name": "catFive",
+          "type": "EVENT_CAT"
+        }
+      ]
+    },
+    {
       "intent": "RadiusIntent",
       "slots": [
         {
@@ -61,7 +105,14 @@
           "type": "TIMEPERIODS"
         }
       ]
-    },{
+    },
+    {
+      "intent": "PassIntent"
+    },
+    {
+      "intent": "RestartIntent"
+    },
+    {
       "intent": "AMAZON.HelpIntent"
     },
     {

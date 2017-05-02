@@ -27,3 +27,18 @@ RadiusIntent {number} mile radius
 RadiusIntent {number} miles away
 RadiusIntent {number} miles
 RadiusIntent no more than {number} miles
+AllInfoIntent What's good with {cat} events within {number} miles of {City} {State}
+AllInfoIntent What's good around {City} {State}
+AllInfoIntent What's good {timePeriod} for {cat} events within {number} miles of {City} {State}
+AllInfoIntent Are there any {cat} or {catTwo} events happening {timePeriod} within {number} miles of {City} {State}
+AllInfoIntent Are there any {cat} events happening {timePeriod} within {number} miles of {City} {State}
+AllInfoIntent Are there any {cat} or {catTwo} or {catThree} or {catFour} or {catFive} events happening {timePeriod} within {number} miles of {City} {State}
+AMAZON.HelpIntent help
+AMAZON.HelpIntent help me
+AMAZON.HelpIntent help me what's good
+PassIntent pass
+PassIntent I don't care
+RestartIntent restart the process
+RestartIntent restart what's good
+RestartIntent undo everything
+ResponseIntent Respond to me
