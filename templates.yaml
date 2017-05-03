@@ -8,10 +8,19 @@ help: >
   all in one sentence ... OR you can say something like What's good in New York, New York and the
   rest of the fields will be set to some defaults...go ahead and try it now!
 timeQ: "What time frame would you like to choose from? {{ aval_time_periods }}"
-categoryQ: "Do you want to filter on category types? Say no or list categories"
+categoryQ: >
+  Do you want to filter on category types? Say no or list categories ...or ask what are the categories?
 categorylist: "These are the categories you can choose from: {{ categories }}"
 radiusQ: "What mile radius would you like to search within?"
 response: "These are the top 10 events: {% for event in events %} {{ event }} {% endfor %}"
 missedCity: "I'm sorry, I didn't seem to get the city you wanted. Can you please repeat it?"
 testResponse: "hello there"
 restart: "Lets start again ... say everything at once or just the city and state"
+detailResponse: "{ {detail} }"
+
+
+# ---card templates
+welcomeTitle: "Welcome!"
+welcomeContent: > 
+  Thanks for trying What's Good! Either say a city and state to get the Q&A process or say help
+ 

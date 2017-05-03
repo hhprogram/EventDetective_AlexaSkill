@@ -367,7 +367,7 @@ class EventQuery():
         # duplicates = find_duplicates(titles)
         for event in dom:
             overview = dom[event]['overview']
-            events.append(overview[title_key] + " starts " + overview[start_key] + "...")
+            events.append(overview[title_key] + " on " + overview[start_key][:10] + "...")
         return events
 
 

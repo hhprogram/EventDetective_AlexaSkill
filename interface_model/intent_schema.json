@@ -10,6 +10,15 @@
       "intent": "ResponseIntent"
     },
     {
+      "intent": "MoreInfoIntent",
+      "slots": [
+        {
+          "name": "title",
+          "type": "AMAZON.LITERAL"
+        }
+      ]
+    },
+    {
       "intent": "AllInfoIntent",
       "slots": [
         {

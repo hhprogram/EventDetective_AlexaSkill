@@ -29,6 +29,13 @@ cat_defaut = None
 time_default = "this week"
 radius_default = 25
 
+"""
+Note: each intent records the info that matches that intents name
+2 ways to search:
+(1) Q&A - (a) City, State (b) Time period (c) categories (d) radius
+(2) Just say all of the above details in one sentence or at least (a) in one sentence 
+"""
+
 def attr_check():
     """
     helper function to check the session's attributes. If all are filled out returns True
@@ -53,7 +60,9 @@ def home_page():
 def skill_launch():
     welcome = render_template("welcome")
     session.attributes[last_attr] = city_attr
-    return question(welcome)
+    card_title = render_template("welcomeTitle")
+    card_txt = render_template("welcomeContent")
+    return question(welcome).simple_card(title=card_title, content=card_txt)
 
 @ask.intent("RestartIntent")
 def clear():
@@ -111,6 +120,10 @@ def help_intent():
 # this city intent. If i name them anything else - it will potentially cause me problems
 @ask.intent("CityIntent")
 def city_intent(City, State):
+    """
+    Triggered when user says city and state. Then we record those and then ask the next question in
+    the Q&A process
+    """
     logging.debug(str(City) + " " + str(State))
     session.attributes[city_attr] = City + "," + State
     if attr_check():
@@ -125,6 +138,9 @@ def city_intent(City, State):
 # attributes for a flask_ask session need to be JSON serializable and date objects are not
 @ask.intent("TimePeriodIntent")
 def time_period(timePeriod):
+    """
+    Triggered when the user says some sort of time frame. then asks next question in Q&A process
+    """
     date_tuple = get_time_period(timePeriod)
     session.attributes[time_attr] = (str(date_tuple[0]), str(date_tuple[1]))
     if attr_check():
@@ -137,6 +153,9 @@ def time_period(timePeriod):
 # how to say the special character &amp;
 @ask.intent("ListAvailableCategoriesIntent")
 def category():
+    """
+    Triggered when the user asks Alexa to list what are the categories
+    """
     aval_categories = get_categories()
     cat_str = "These are the available categories to choose from ..." + "...".join(aval_categories)\
         + ". Which one or ones would you like to choose to include or exclude?"
@@ -144,6 +163,9 @@ def category():
 
 @ask.intent("CategoryIntent")
 def filter_category(cat, catTwo, catThree, catFour, catFive):
+    """
+    Triggered when user says no or 1 to five possible categories
+    """
     final_cat = cat_lst_helper([cat, catTwo, catThree, catFour, catFive])
     session.attributes[cat_attr] = final_cat
     if attr_check():
@@ -154,14 +176,55 @@ def filter_category(cat, catTwo, catThree, catFour, catFive):
 
 @ask.intent("RadiusIntent")
 def radius(number):
+    """
+    Triggered when user says something about the miles radius. Then assumes this should be end of 
+    Q&A process and just checks to make sure all necessary attributes are done. If not, will
+    ask user
+    """
     session.attributes[radius_attr] = number
     params = session.attributes
     if attr_check():
         response = alexa_response()
         return question(response)
     for attr in attr_map:
-        if attr not in session.attributes:
+        if attr not in session.attributes or session.attributes[attr] == None:
+            session.attributes[last_attr] = attr
             return question(render_template(attr_map[attr]))
+
+
+
+@ask.intent("AllInfoIntent")
+def all_info(timePeriod, cat, catTwo, catThree, catFour, catFive, number, City, State):
+    """
+    Triggered when user just wants to skip Q&A process and asks Alexa directly 
+    """
+    session.attributes[time_attr] = timePeriod
+    session.attributes[radius_attr] = number
+    session.attributes[cat_attr] = cat_lst_helper([cat, catTwo, catThree, catFour, catFive])
+    if City == None:
+        return question(render_template("missedCity"))
+    else:
+        session.attributes[city_attr] = City + "," + State
+    if attr_check():
+        response = alexa_response()
+        return question(response)
+    else:
+        print("should")
+        fill_missing_pieces()
+        if not attr_check():
+            logging.debug("Something is wrong in AllInfoIntent")
+        response = alexa_response()
+        return question(response)
+
+@ask.intent("MoreInfoIntent")
+def more_info(partOne, partTwo, partThree, partFour, partFive, partSix):
+    """
+    Triggered when user asks for more detail on a specific event Alexa has said
+    Broke into 6 possible parts this title could have that the user wants more details on
+    """
+
+    return question(render_template("detailResponse", detail=title))
+
 
 
 def cat_lst_helper(lst):
@@ -183,31 +246,25 @@ def cat_lst_helper(lst):
     return final_str
 
 
-@ask.intent("AllInfoIntent")
-def all_info(timePeriod, cat, catTwo, catThree, catFour, catFive, number, City, State):
-    session.attributes[time_attr] = timePeriod
-    session.attributes[radius_attr] = number
-    session.attributes[cat_attr] = cat_lst_helper([cat, catTwo, catThree, catFour, catFive])
-    if City == None:
-        return question(render_template("missedCity"))
-    else:
-        session.attributes[city_attr] = City + "," + State
-    if attr_check():
-        response = alexa_response()
-        return question(response)
-    else:
-        print("should")
-        fill_missing_pieces()
-        if not attr_check():
-            logging.debug("Something is wrong in AllInfoIntent")
-        response = alexa_response()
-        return question(response)
 
 def fill_missing_pieces():
+    """
+    any attribute in the attributes dict that needs to be set to a default is
+    """
     for attr in attr_lst:
         if session.attributes[attr] == None:
             session.attributes[last_attr] = attr
             pass_intent(all_info_call=True)
+
+def clean(lst):
+    """
+    cleans the response list strings of any character alexa doesn't like (ie non valid SSML)
+    """
+    clean_lst = []
+    for element in lst:
+        new = element.replace("&", "and")
+        clean_lst.append(new)
+    return clean_lst
 
 def alexa_response():
     params = session.attributes
@@ -222,8 +279,10 @@ def alexa_response():
     eventquery.add_query(url)
     eventquery.query_url(api_domain)
     lst = eventquery.get_overview(api_domain)
+    clean_lst = clean(lst)
+    session.attributes['response'] = clean_lst
     # return question(render_template("testResponse"))
-    return render_template("response", events=lst)
+    return render_template("response", events=clean_lst)
 
 
 if __name__ == "__main__":

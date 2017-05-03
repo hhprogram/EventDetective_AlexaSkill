@@ -5,6 +5,9 @@ CityIntent How about {City} {State}
 CityIntent What's good in {City} {State}
 CityIntent What's happening in {City} {State}
 TimePeriodIntent {timePeriod}
+TimePeriodIntent {timePeriod} through sunday
+TimePeriodIntent all of {timePeriod}
+TimePeriodIntent from today to end of {timePeriod}
 TimePeriodIntent I'm interested in {timePeriod}
 TimePeriodIntent What's good {timePeriod}
 TimePeriodIntent How about {timePeriod}
@@ -42,3 +45,4 @@ RestartIntent restart the process
 RestartIntent restart what's good
 RestartIntent undo everything
 ResponseIntent Respond to me
+MoreInfoIntent More info on {title}
