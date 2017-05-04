@@ -31,6 +31,7 @@ RadiusIntent {number} miles away
 RadiusIntent {number} miles
 RadiusIntent no more than {number} miles
 AllInfoIntent What's good with {cat} events within {number} miles of {City} {State}
+AllInfoIntent What's good in {City} {State}
 AllInfoIntent What's good around {City} {State}
 AllInfoIntent What's good {timePeriod} for {cat} events within {number} miles of {City} {State}
 AllInfoIntent Are there any {cat} or {catTwo} events happening {timePeriod} within {number} miles of {City} {State}
@@ -45,4 +46,18 @@ RestartIntent restart the process
 RestartIntent restart what's good
 RestartIntent undo everything
 ResponseIntent Respond to me
-MoreInfoIntent More info on {title}
+MoreInfoIntent More info on {partOne}
+MoreInfoIntent More info on {partOne} {partTwo}
+MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} {partFive} {partSix} {partSeven} {date}
+MoreInfoIntent More info on the {date} {partOne} {partTwo} {partThree} {partFour} {partFive} {partSix} {partSeven} 
+MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour}
+MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} {date}
+MoreInfoIntent More info on {partOne} {partTwo} {partThree} {date}
+MoreInfoIntent More info on {partOne} {partTwo} {date}
+MoreInfoIntent More info on {partOne} {date}
+MoreInfoIntent More info on the {date} {partOne} {partTwo}
+MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} on {date}
+MoreInfoIntent More info on {partOne} {partTwo} {partThree} on {date}
+MoreInfoIntent More info on {partOne} {partTwo} on {date}
+MoreInfoIntent More info on {partOne} on {date}
+MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} {partFive} {partSix} {partSeven} on {date}

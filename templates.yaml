@@ -13,14 +13,17 @@ categoryQ: >
 categorylist: "These are the categories you can choose from: {{ categories }}"
 radiusQ: "What mile radius would you like to search within?"
 response: "These are the top 10 events: {% for event in events %} {{ event }} {% endfor %}"
-missedCity: "I'm sorry, I didn't seem to get the city you wanted. Can you please repeat it?"
+missedInput: "I'm sorry, I didn't seem to get the {{ input }} you wanted. Can you please repeat it?"
 testResponse: "hello there"
 restart: "Lets start again ... say everything at once or just the city and state"
-detailResponse: "{ {detail} }"
+detailResponse: >
+  {{ title }} starts on {{ start }} and ends on {{ end }} at {{ venue }}...the description is 
+  ...{{ description }}
+problem: "Sorry seemed to have misheard...Please repeat your request"
+noevents: "Sorry there seems to be no events in this session...Please restart process"
 
 
 # ---card templates
 welcomeTitle: "Welcome!"
 welcomeContent: > 
   Thanks for trying What's Good! Either say a city and state to get the Q&A process or say help
- 

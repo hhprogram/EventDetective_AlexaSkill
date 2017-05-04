@@ -19,7 +19,20 @@ def get_titles():
         events = get_events(url)
         for e_id in events:
             new_ex = events[e_id]['overview']["title"].split(" ")
-            [slot_examples.add(word) for word in new_ex]
+            clean = []
+            for word in new_ex:
+                if len(word) == 0:
+                    continue
+                if not word[0].isalnum():
+                    word = word[1:]
+                if len(word) == 0:
+                    continue
+                if not word[-1].isalnum():
+                    word = word[:-1]
+                if len(word) == 0:
+                    continue
+                clean.append(word)
+            [slot_examples.add(word.lower()) for word in clean]
         print("Done with " + city + " got " + str(len(events)) + " events")
     return slot_examples
 

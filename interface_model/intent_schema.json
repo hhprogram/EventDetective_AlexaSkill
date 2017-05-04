@@ -13,8 +13,36 @@
       "intent": "MoreInfoIntent",
       "slots": [
         {
-          "name": "title",
-          "type": "AMAZON.LITERAL"
+          "name": "partOne",
+          "type": "TITLE_NAMES"
+        },
+        {
+          "name": "partTwo",
+          "type": "TITLE_NAMES"
+        },
+        {
+          "name": "partThree",
+          "type": "TITLE_NAMES"
+        },
+        {
+          "name": "partFour",
+          "type": "TITLE_NAMES"
+        },
+        {
+          "name": "partFive",
+          "type": "TITLE_NAMES"
+        },
+        {
+          "name": "partSix",
+          "type": "TITLE_NAMES"
+        },
+        {
+          "name": "partSeven",
+          "type": "TITLE_NAMES"
+        },
+        {
+          "name": "date",
+          "type": "AMAZON.DATE"
         }
       ]
     },

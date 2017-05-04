@@ -340,7 +340,7 @@ class EventQuery():
                 with rate of speech
         Returns:
             list of titles of the events in self.INFO[DOMAIN]. ie return list of event titles that
-            have been found via that domain's api
+            have been found via that domain's api (doesn't eliminate duplicate titles)
         """
         # print(type(self.info[domain]))
         # print(self.info[domain].keys())
@@ -361,13 +361,20 @@ class EventQuery():
         return event_titles
 
     def get_overview(self, domain):
+        """
+        returns a list of tuples where the 1st element is the way alexa will say it and the 2nd 
+        element is just the event title and the 3rd element is the event id, 4th element is start 
+        date in format yy-mm-dd
+        """
         dom = self.info[domain]
         events = []
         titles = self.get_titles(domain)
         # duplicates = find_duplicates(titles)
         for event in dom:
             overview = dom[event]['overview']
-            events.append(overview[title_key] + " on " + overview[start_key][:10] + "...")
+            title = overview[title_key]
+            start_dt = overview[start_key][:10]
+            events.append((title, title, event, start_dt))
         return events
 
 
@@ -392,6 +399,22 @@ class EventQuery():
                     f.write(key + ": " + str(overview[key]))
                     f.write("\n")
                 f.write("---\n")
+
+    def get_details(self, event_id, domain):
+        """
+        Args:
+            EVENT_ID: the event id we are interested in
+            DOMAIN: the domain in which we got this event info
+        Returns:
+            list [start time, end time, venue name, description]
+        """
+        results = []
+        print(self.info.keys())
+        results.append(self.info[domain][event_id]['overview'][start_key])
+        results.append(self.info[domain][event_id]['overview'][stop_key])
+        results.append(self.info[domain][event_id]['details'][venue_key])
+        results.append(self.info[domain][event_id]['details'][description_key])
+        return results
 
     def write_detail(self, domain, event_ids):
         """
