@@ -33,6 +33,7 @@ RadiusIntent no more than {number} miles
 AllInfoIntent What's good with {cat} events within {number} miles of {City} {State}
 AllInfoIntent What's good in {City} {State}
 AllInfoIntent What's good around {City} {State}
+AllInfoIntent What's good {timePeriod} in {City} {State}
 AllInfoIntent What's good {timePeriod} for {cat} events within {number} miles of {City} {State}
 AllInfoIntent Are there any {cat} or {catTwo} events happening {timePeriod} within {number} miles of {City} {State}
 AllInfoIntent Are there any {cat} events happening {timePeriod} within {number} miles of {City} {State}
@@ -43,21 +44,29 @@ AMAZON.HelpIntent help me what's good
 PassIntent pass
 PassIntent I don't care
 RestartIntent restart the process
-RestartIntent restart what's good
 RestartIntent undo everything
 ResponseIntent Respond to me
 MoreInfoIntent More info on {partOne}
 MoreInfoIntent More info on {partOne} {partTwo}
-MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} {partFive} {partSix} {partSeven} {date}
-MoreInfoIntent More info on the {date} {partOne} {partTwo} {partThree} {partFour} {partFive} {partSix} {partSeven} 
+MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} {partFive} {partSix} {partSeven}
 MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour}
-MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} {date}
-MoreInfoIntent More info on {partOne} {partTwo} {partThree} {date}
-MoreInfoIntent More info on {partOne} {partTwo} {date}
-MoreInfoIntent More info on {partOne} {date}
-MoreInfoIntent More info on the {date} {partOne} {partTwo}
-MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} on {date}
-MoreInfoIntent More info on {partOne} {partTwo} {partThree} on {date}
-MoreInfoIntent More info on {partOne} {partTwo} on {date}
-MoreInfoIntent More info on {partOne} on {date}
-MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} {partFive} {partSix} {partSeven} on {date}
+MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour}
+BackIntent go back
+BackIntent back
+DescriptionIntent Describe the event
+DescriptionIntent Description
+DescriptionIntent Description please
+DistanceIntent What's the distance
+DistanceIntent Get me the distance
+DistanceIntent what's the distance
+DistanceIntent What's the distance via {transit}
+DistanceIntent Get me the distance via {transit}
+DistanceIntent what's the distance via {transit}
+LocationIntent my location is {addr} {city} {state}
+LocationIntent {addr} {city} {state}
+LocationIntent the starting address is {addr} {city} {state}
+LocationIntent I'm at {addr} {city} {state}
+LocationIntent my location is {addr} {city}
+LocationIntent {addr} {city}
+LocationIntent the starting address is {addr} {city}
+LocationIntent I'm at {addr} {city}

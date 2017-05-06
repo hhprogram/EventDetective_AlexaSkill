@@ -30,6 +30,7 @@ ex_category_url = "&ex_category="
 page_url = "&page_number="
 keyword_url = "&keywords="
 
+img_sizes = ["large", "medium", "thumb", "small"]
 sort_options = {0: "popularity", 1: "date", 2: "relevance"}
 
 
@@ -53,6 +54,7 @@ longitude_key = "longitude"
 region_key = "region_abbr"
 postal_key = "postal_code"
 name_key = "name"
+url_key = "url"
 
 
 """
@@ -148,10 +150,23 @@ def build_eventful_url(city, mile_radius=25, page_size=10, sort_order=sort_optio
     if date_start == None or date_end == None:
         logging.debug("Dates are none type - will just use FUTURE tag for date query field")
         date_field = "future"
+    # assume if both are strs then formatted the correct way that eventful wants it other than
+    # trailing zeros YYYYmmdd00-YYYY-mm-dd00
+    elif isinstance(date_start, str) and isinstance(date_end, str):
+         date_start += "00"
+         date_end += "00"
+         date_field = date_start + "-" + date_end
     else:
-        # add the trailing 0's to get into the eventful api format
-        date_start_str = str(date_start.year) + str(date_start.month) + str(date_start.day) + "00"
-        date_end_str = str(date_end.year) + str(date_end.month) + str(date_end.day) + "00"
+        # need some logic...if day is one digit then need to add 0 in front of it or else will not 
+        # get desired date filtering behavior
+        day = str(date_start.day)
+        if len(day) == 1:
+            day = "0"+day
+        date_start_str = str(date_start.year) + str(date_start.month) + day + "00"
+        day2 = str(date_end.day)
+        if len(day2) == 1:
+            day2 = "0"+day2
+        date_end_str = str(date_end.year) + str(date_end.month) + day2 + "00"
         date_field = date_start_str + "-" + date_end_str
     if cat:
         print(cat)
@@ -185,8 +200,8 @@ def get_events(url):
     method given URL will actually return a list of dicts such that each dict hold details for a
     single event
     Returns:
-        Dictionary of events. key - event id (unique), value is a dictionary of details related to 
-            event
+        Dictionary of events. key - event titles (not necessarily unique), value is a dict of unique
+         event ids that then lead to dicts of that specific event ids specific info
     """
     # this returns a response object that i can read() or readline() - which returns bytes
     response = urllib.request.urlopen(url)
@@ -198,7 +213,10 @@ def get_events(url):
     full_event_list = json_output[events_key][event_key]
     dict_events = {}
     for event in full_event_list:
-        dict_events[event[id_key]] = get_event_details(event)
+        if event[title_key] not in dict_events:
+            dict_events[event[title_key]] = {event[id_key]: get_event_details(event)}
+        else:
+            dict_events[event[title_key]][event[id_key]] = get_event_details(event)
     return dict_events
 
 def get_event_details(event):
@@ -222,16 +240,34 @@ def get_event_details(event):
     overview_values[stop_key] = event[stop_key]
     details[venue_key] = event[venue_key]
     details[description_key] = event[description_key]
+    details[image_key] = get_img(event)
     location['lon'] = event[longitude_key]
     location['lat'] = event[latitude_key]
-    # location['full_address'] = event[venue_addr_key] + ", " + event[city_key] + ", " \
-    #     + event[region_key] + ", " + event[postal_key]
-    if not event[venue_addr_key] or not event[city_key] or not event[region_key] \
-        or not event[postal_key]:
-        location['complete'] = True
+    # if either the addr or city is missing then don't construct an addr. Google distance api can 
+    # properly search if just have addr and city. but with just addr could possibly get something 
+    # that is totally in another state/city
+    if not event[venue_addr_key] or not event[city_key]:
+        location['full_address'] = ""
     else:
-        location['complete'] = False
+            location[venue_addr_key] = event[venue_addr_key] + "," + event[city_key] + "," \
+                + event[region_key]
     return general
+
+def get_img(event):
+    """
+    takes an event dictionary and then returns the largest picture url possible. prioritizes the 
+    "thumb" image url before "small"
+    Not used for now as eventful image url are not HTTPS Therefore alexa doesn't allow
+    """
+    img_dict = event[image_key]
+    url = ""
+    # if img_dict:
+    #     for size in img_sizes:
+    #         if size in img_dict:
+    #             url = img_dict[size][url_key]
+    #             return url
+    return url
+
 
 def get_page(url):
     """
@@ -257,8 +293,6 @@ def find_duplicates(lst):
         else:
             dup.add(el)
     return dup
-
-
 
 
 class EventQuery():
@@ -332,49 +366,25 @@ class EventQuery():
         self._next_page(domain)
         self.query_url(domain)
 
-    def get_titles(self, domain, with_dots=False):
-        """
-        Args:
-            DOMAIN: the domain of which these events were taken from
-            WITH_DOTS: True is we want to add "..." inbetween each individual title to help Alexa
-                with rate of speech
-        Returns:
-            list of titles of the events in self.INFO[DOMAIN]. ie return list of event titles that
-            have been found via that domain's api (doesn't eliminate duplicate titles)
-        """
-        # print(type(self.info[domain]))
-        # print(self.info[domain].keys())
-        dom = self.info[domain]
-        
-        if with_dots:
-            event_titles = []
-            count = 0
-            for event in dom:
-                if count % 2 == 0:
-                    event_titles.append(dom[event]['overview'][title_key])
-                    count+=1
-                else:
-                    event_titles.append("...")
-                    count+=1
-        else:
-            event_titles = [dom[event]['overview'][title_key] for event in dom]
-        return event_titles
-
     def get_overview(self, domain):
         """
-        returns a list of tuples where the 1st element is the way alexa will say it and the 2nd 
-        element is just the event title and the 3rd element is the event id, 4th element is start 
-        date in format yy-mm-dd
+        a dict. key is the event title. value is another dict where the key - is the unique event
+        id and then its value is the result of the get_details method
         """
         dom = self.info[domain]
-        events = []
-        titles = self.get_titles(domain)
-        # duplicates = find_duplicates(titles)
+        events = {}
         for event in dom:
-            overview = dom[event]['overview']
-            title = overview[title_key]
-            start_dt = overview[start_key][:10]
-            events.append((title, title, event, start_dt))
+            # must create the empty dict here. first did it in the inner loop and was incorrect as 
+            # if there was an event title with multiple event ids then it would just recreate the 
+            # dict and then I wouldn't have proper structure of a dict that had event ids as the 
+            # keys as would always just have 1:1 relationship with the last event_id of the 
+            # duplicated event title as the only key
+            events[event] = {}
+            for event_id in dom[event]:
+                # print(event, event_id)
+                # note can't create a key like this (events[event][event_id]) first need to create a
+                # empty dict for events[event] and then add the key event_id to that
+                events[event][event_id] = self.get_details(event, event_id, domain)
         return events
 
 
@@ -400,20 +410,20 @@ class EventQuery():
                     f.write("\n")
                 f.write("---\n")
 
-    def get_details(self, event_id, domain):
+    def get_details(self, event_title, event_id, domain):
         """
         Args:
             EVENT_ID: the event id we are interested in
             DOMAIN: the domain in which we got this event info
         Returns:
-            list [start time, end time, venue name, description]
+            list [start time, end time, venue name, description, venue_addr]
         """
         results = []
-        print(self.info.keys())
-        results.append(self.info[domain][event_id]['overview'][start_key])
-        results.append(self.info[domain][event_id]['overview'][stop_key])
-        results.append(self.info[domain][event_id]['details'][venue_key])
-        results.append(self.info[domain][event_id]['details'][description_key])
+        results.append(self.info[domain][event_title][event_id]['overview'][start_key])
+        results.append(self.info[domain][event_title][event_id]['overview'][stop_key])
+        results.append(self.info[domain][event_title][event_id]['details'][venue_key])
+        results.append(self.info[domain][event_title][event_id]['details'][description_key])
+        results.append(self.info[domain][event_title][event_id]['location'][venue_addr_key])
         return results
 
     def write_detail(self, domain, event_ids):
@@ -454,34 +464,6 @@ class EventQuery():
             if event_string == event_title:
                 ids.append(key)
         return ids
-
-
-    def find_distance(origin, domain, event_id, transit_mode=None):
-        """
-        Finds the duration and distance and cost (if available) from origin to venue_addr
-        """
-        def get_venue_addr(event_id):
-            """
-            helper to get the address associated with EVENT_ID
-            Returns:
-                Tuple (venue's location, boolean indicating True if an address and False if lat/lon)
-            """
-            location_info = self.info[domain][event_id]['location']
-            use_addr = False
-            if self.info[domain]['location']['complete']:
-                venue_addr = location_info['full_address']
-                use_addr = True
-            else:
-                venue_addr = location_info['lat'] + "," + location_info['lon']
-            return venue_addr, use_addr
-
-
-        loc, addr_indic = get_venue_addr(event_id)
-        duration, distance, cost = find_directions(origin, loc, transit_mode)
-        return duration, distance, cost, transit_mode
-
-
-
 
 if __name__ == "__main__":
     # city = input("What city do you what to look for events:")

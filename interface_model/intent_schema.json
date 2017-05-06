@@ -10,6 +10,38 @@
       "intent": "ResponseIntent"
     },
     {
+      "intent": "BackIntent"
+    },
+    {
+      "intent": "DescriptionIntent"
+    },
+    {
+      "intent": "DistanceIntent",
+      "slot": [
+        {
+          "name": "transit",
+          "type": "TRANSIT"
+        }
+      ]
+    },
+    {
+      "intent": "LocationIntent",
+      "slots": [
+        {
+          "name": "addr",
+          "type": "AMAZON.PostalAddress"
+        },
+        {
+          "name": "city",
+          "type": "AMAZON.US_CITY"
+        },
+        {
+          "name": "state",
+          "type": "AMAZON.US_STATE"
+        }   
+      ]
+    },
+    {
       "intent": "MoreInfoIntent",
       "slots": [
         {
@@ -39,10 +71,6 @@
         {
           "name": "partSeven",
           "type": "TITLE_NAMES"
-        },
-        {
-          "name": "date",
-          "type": "AMAZON.DATE"
         }
       ]
     },
