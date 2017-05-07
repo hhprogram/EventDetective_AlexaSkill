@@ -241,6 +241,7 @@ def get_event_details(event):
     details[venue_key] = event[venue_key]
     details[description_key] = event[description_key]
     details[image_key] = get_img(event)
+    details[url_key] = event[url_key]
     location['lon'] = event[longitude_key]
     location['lat'] = event[latitude_key]
     # if either the addr or city is missing then don't construct an addr. Google distance api can 
@@ -416,7 +417,7 @@ class EventQuery():
             EVENT_ID: the event id we are interested in
             DOMAIN: the domain in which we got this event info
         Returns:
-            list [start time, end time, venue name, description, venue_addr]
+            list [start time, end time, venue name, description, venue_addr, event_url]
         """
         results = []
         results.append(self.info[domain][event_title][event_id]['overview'][start_key])
@@ -424,6 +425,7 @@ class EventQuery():
         results.append(self.info[domain][event_title][event_id]['details'][venue_key])
         results.append(self.info[domain][event_title][event_id]['details'][description_key])
         results.append(self.info[domain][event_title][event_id]['location'][venue_addr_key])
+        results.append(self.info[domain][event_title][event_id]['details'][url_key])
         return results
 
     def write_detail(self, domain, event_ids):

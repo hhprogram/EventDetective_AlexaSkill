@@ -15,7 +15,7 @@ categoryQ: >
   Do you want to filter on category types? Say no or list categories ...or ask what are the categories?
 categorylist: "These are the categories you can choose from: {{ categories }}"
 radiusQ: "What mile radius would you like to search within?"
-response: "These are the top {{ num }} events: {% for event in events %} {{ event }} {% endfor %}"
+response: "These are the top {{ num }} events near {{city}}: {% for event in events %} {{ event }} {% endfor %}"
 missedInput: "I'm sorry, I didn't seem to get the {{ input }} you wanted. Can you please repeat it?"
 testResponse: "hello there"
 restart: "Lets start again ... say everything at once or just the city and state"
@@ -26,7 +26,7 @@ detailResponse: >
   the description say ...description please
 multiDetail: >
   There are {{ num }} events named {{ title }}...the list of each specific one is as follows...
-  {% for count, start, end, venue in events %} Number {{ count }} starts on {{ start }} and ends on 
+  {% for count, start, end, venue, desc, url in events %} Number {{ count }} starts on {{ start }} and ends on 
   {{ end }} at {{ venue }}... {% endfor %}...You can say more info on...whatever other event was 
   listed or say back to hear the list again...  The description can be seen on the accompanying 
   Alexa app card but if you'd like Alexa to read you the description say ...description please
@@ -40,10 +40,10 @@ requestDest: "No destination on record...please say more info on...and then ask 
 
 # ---card templates
 welcomeTitle: "Welcome!"
-responseCard: "Top {{num}} Events: \n {% for event in events %} {{event}} \n ---\n{% endfor %}"
-detailCard: "{% for start, end, venue, desc in events %} Starts: {{start}} \n Ends: {{end}} \n Venue Name: {{venue}} \n Description: {{desc}} {% endfor %}"
-multiDetailCard: "The description for this event is: \n {{desc}} \n Below are the specific details for each occurence: \n{% for num, start, end, venue, desc in events %} Starts: {{start}} \n Ends: {{end}} \n Venue Name: {{venue}} \n ---\n{% endfor %}"
+responseCard: "Top {{num}} Events for {{city}}: \n {% for event in events %} {{event}} \n ---\n{% endfor %}"
+detailCard: "{% for start, end, venue, desc, url in events %} Starts: {{start}} \n Ends: {{end}} \n Venue Name: {{venue}} \n Description: {{desc}} \n Event Url: {{url}} {% endfor %}"
+multiDetailCard: "The description for this event is: \n {{desc}} \n Below are the specific details for each occurence: \n{% for num, start, end, venue, desc, url in events %} Starts: {{start}} \n Ends: {{end}} \n Venue Name: {{venue}} \n Event Url: {{url}} \n ---\n{% endfor %}"
 welcomeContent: "Thanksfor trying What's Good! \
   \n Either say a city and state to get the Q&A process or say help"
 availableCats: "Available categories to choose from: \n {% for cat in cats %} {{cat}} \n {% endfor %}"
-distanceCard: "Travel time: {{time}} \n Distance: {{distance}} \n Directions: \n {% for step in directions %} {{step}} \n {% endfor%}"
+distanceCard: "Travel time: {{time}} \n Distance: {{distance}} \n Directions: \n {% for num, step in directions %} Step {{num}}: {{step}} \n {% endfor%}"

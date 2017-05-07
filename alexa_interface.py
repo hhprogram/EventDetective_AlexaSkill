@@ -35,6 +35,8 @@ dir_attr = "directions"
 loc_attr = "start_loc"
 # attribute that holds destination addr of the event we got in more info or user prompted
 dest_attr = "dest_loc"
+# the previous city that was searched
+prev_attr = "prev_city"
 # mapping between the attributes and what template the user should be prompted with if that attr 
 # doesn't have a value
 attr_map = {cat_attr: "categoryQ", time_attr: "timeQ", city_attr: "missedInput"
@@ -250,17 +252,20 @@ def all_info(timePeriod, cat, catTwo, catThree, catFour, catFive, number, City, 
     """
     Triggered when user just wants to skip Q&A process and asks Alexa directly 
     """
+    params = session.attributes
     if timePeriod:
-        session.attributes[time_period_attr] = timePeriod
+        params[time_period_attr] = timePeriod
         date_tuple = get_time_period(timePeriod)
         timePeriod = (str(date_tuple[0]), str(date_tuple[1]))
-    session.attributes[time_attr] = timePeriod
-    session.attributes[radius_attr] = number
-    session.attributes[cat_attr] = cat_lst_helper([cat, catTwo, catThree, catFour, catFive])
+    params[time_attr] = timePeriod
+    params[radius_attr] = number
+    params[cat_attr] = cat_lst_helper([cat, catTwo, catThree, catFour, catFive])
     if City == None:
         return question(render_template("missedInput"))
     else:
-        session.attributes[city_attr] = City + "," + State
+        if city_attr in params:
+            params[prev_attr] = params[city_attr]
+        params[city_attr] = City + "," + State
     if attr_check():
         response, card = alexa_response()
         return question(response).simple_card(title="Events", content=card)
@@ -332,11 +337,8 @@ def more_info(partOne, partTwo, partThree, partFour, partFive, partSix, partSeve
         if len(event_ids) > 1:
             for count, e_id in enumerate(event_ids):
                 deets = event_dict[e_id]
-                details.append((count, deets[0], deets[1], deets[2], deets[3]))
-            if not deets[4]:
-                return question(render_template("multiDetail", title=clean([title]),num=len(details)
-                , events=details)).standard_card(title=title
-                    , text=render_template("multiDetailCard", desc=details[0][4], events=details))
+                details.append((count, deets[0], deets[1], deets[2], deets[3], deets[5]))
+
             return question(render_template("multiDetail", title=clean([title]),num=len(details)
                 , events=details)).standard_card(title=title
                     , text=render_template("multiDetailCard", desc=details[0][4], events=details))          
@@ -346,7 +348,7 @@ def more_info(partOne, partTwo, partThree, partFour, partFive, partSix, partSeve
             # making this a list just to make it easier to unpack this tuple into my template.
             # unpacking via a for loop. thus need to wrap my tuple into a list even though there 
             # will be only 1 element in this list
-            details.append((deets[0], deets[1], deets[2], deets[3]))
+            details.append((deets[0], deets[1], deets[2], deets[3], deets[5]))
             print(len(details))
             response = render_template("detailResponse", title=clean([title]), start= details[0][0]\
                 , end=details[0][1], venue=details[0][2])
@@ -420,6 +422,8 @@ def dist_dir_helper():
     params = session.attributes
     distance, directions, static_map = get_all_map_info(params[loc_attr], params[dest_attr][1])
     time, distance, _ = distance
+    step_nums = [i for i in range(1,len(directions)+1)]
+    directions = list(zip(step_nums, directions))
     response = render_template("distance", venue=params[dest_attr][0], distance=distance
         , time=time)
     card = render_template("distanceCard", time=time, distance=distance, directions=directions)
@@ -469,6 +473,17 @@ def clean_str(string):
     new_str = string.replace("&", " and ")
     return new_str
 
+def city_check():
+    """
+    Returns:
+        Boolean if the previous city searched for is the same as the current searched city
+    """
+    params = session.attributes
+    if prev_attr not in params or params[prev_attr] == None:
+        return False
+    return params[prev_attr].replace(" ", "").lower() == params[city_attr].replace(" ", "").lower()
+
+
 def alexa_response():
     """
     only called once alexa will be able to create a functioning URL for eventful api. first checks
@@ -481,15 +496,17 @@ def alexa_response():
         (2nd element) rendered template for alexa card
         modifies the session.attributes dict by adding a list of the event titles (sans start time)
     """
-    if attr_check() and titles_attr in session.attributes:
+    params = session.attributes
+    if attr_check() and titles_attr in session.attributes and city_check():
         events = session.attributes[titles_attr]
         clean_titles = clean([title for title in events])
         num_events = len(clean_titles)
-        audio = render_template("response", events=clean_titles, num=num_events)
-        card = render_template("responseCard", events=list(events.keys()), num=num_events)
+        audio = render_template("response", events=clean_titles, num=num_events
+            ,city=params[city_attr])
+        card = render_template("responseCard", events=list(events.keys()), num=num_events
+            ,city=params[city_attr])
         return (audio, card)
-
-    params = session.attributes
+ 
     date_start = params[time_attr][0]
     date_end = params[time_attr][1]
     url = build_eventful_url(params[city_attr], mile_radius=params[radius_attr]
@@ -505,8 +522,9 @@ def alexa_response():
     session.attributes[titles_attr] = events
     num_events = len(clean_titles)
     # return question(render_template("testResponse"))
-    audio = render_template("response", events=clean_titles, num=num_events)
-    card = render_template("responseCard", events=list(events.keys()), num=num_events)
+    audio = render_template("response", events=clean_titles, num=num_events, city=params[city_attr])
+    card = render_template("responseCard", events=list(events.keys()), num=num_events
+        , city=params[city_attr])
     return (audio, card)
 
 
