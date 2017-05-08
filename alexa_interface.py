@@ -5,15 +5,17 @@ import logging
 import datetime
 from getEvents import EventQuery, get_time_period, get_categories, build_eventful_url
 from googMaps import get_all_map_info
+from http import HTTPStatus
 
 app = Flask(__name__)
 ask = Ask(app, "/WhatsGood")
 logging.getLogger("flask_ask").setLevel(logging.DEBUG)
-eventquery = EventQuery()
 api_domain = 'http://api.eventful'
+# ---alexa application id. used to verify if intents are truly meant for my skill
+skill_id = "amzn1.ask.skill.5e2ec818-6fa3-4a0b-94c1-91f2fd0a4701"
 # --- keys for the session.attributes dict
 cat_attr = 'category'
-time_attr = 'time'
+time_attr = 'time frame'
 city_attr = 'city'
 radius_attr = 'radius'
 # this is attribute for a session to keep track of which question was previously asked
@@ -41,6 +43,31 @@ prev_attr = "prev_city"
 # doesn't have a value
 attr_map = {cat_attr: "categoryQ", time_attr: "timeQ", city_attr: "missedInput"
     , radius_attr: "radiusQ"}
+location_q = "distance/directions response"
+# used to denote that last thing alexa said was the more info response
+more_q = "more info response"
+# used to denote if the last thing prompted to user was the overview list
+responseQ = "alexa_overview_response"
+# used to keep track of all possible commands that Alexa can handle and used for the list commands
+# intent
+command_list = [("ListAvailableCategoriesIntent", ""),
+("ResponseIntent", "example", "result"),
+("BackIntent", "example", "result"),
+("DescriptionIntent", "example", "result"),
+("ListCommandsIntent", "example", "result"),
+("DetailHelpIntent", "example", "result"),
+("DistanceIntent", "example", "result"),
+("LocationIntent", "example", "result"),
+("MoreInfoIntent", "example", "result"),
+("AllInfoIntent", "example", "result"),
+("RadiusIntent", "example", "result"),
+("CategoryIntent", "example", "result"),
+("CityIntent", "example", "result"),
+("TimePeriodIntent", "example", "result"),
+("PassIntent", "example", "result"),
+("RestartIntent", "example", "result"),
+("AMAZON.HelpIntent", "example", "result"),
+("AMAZON.StopIntent", "example", "result")]
 
 # --- defaults
 cat_defaut = None
@@ -69,6 +96,13 @@ def attr_check():
                 return False
     return True
 
+def id_check():
+    """
+    method called by every intent to confirm that the application id in the JSON request matches 
+    this skill (required for certification)
+    """
+    return session.application['applicationId'] == skill_id
+
 @app.route('/WhatsGood')
 def home_page():
     return "The server is running..."
@@ -76,7 +110,8 @@ def home_page():
 
 @ask.launch
 def skill_launch():
-    eventquery = EventQuery()
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     welcome = render_template("welcome")
     session.attributes[last_attr] = city_attr
     card_title = render_template("welcomeTitle")
@@ -86,22 +121,57 @@ def skill_launch():
 @ask.intent("RestartIntent")
 def clear():
     """
-    Clear the current session's attributes and wait for another entirely new request
+    Clear the current session's attributes and wait for another entirely new request. (except for 
+        the location attribute. It keeps that as don't want to make user reenter same starting 
+        location if do multiple searches)
     """
-    eventquery = EventQuery()
+    if not id_check():
+        raise ValueError("Invalid Application ID")
+    loc = session.attributes[loc_attr]
     session.attributes.clear()
+    session.attributes[loc_attr] = loc
     return question(render_template("restart"))
 
 @ask.intent("BackIntent")
 def back_intent():
     """
     triggered when user says 'back'. takes user back from the 
-    details to the overview list
+    details to the overview list or back to previous question
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
+    params = session.attributes
+    if city_attr in session.attributes:
+        last = params[last_attr]
+        if last == more_q:
+            events = params[titles_attr]
+            lst = []
+            # don't call alexa_response again as want to get the same list of events and conserve
+            # time and not have to requery the api
+            for count, title in enumerate(events.keys()):
+                lst.append((count,title))
+            response = render_template("response", events=lst, num=len(events)
+                , city=params[city_attr])
+            card = render_template("responseCard", num=len(events), city=params[city_attr])
+            return question(response).simple_card(title="Events in "+params[city_attr]
+                , content=card)
+        if last == location_q:
+            title = params[results_attr]
+            response, card = more_info_helper(title)
+            params[last_attr] = more_q
+            return question(response).standard_card(title=title, text=card)
+        if params[last_attr] == city_attr:
+            return question(render_template(attr_map[last], input=city_attr))
+        else:
+            params[last_attr] = attr_lst[attr_lst.index(last) - 1]
+            if params[last_attr] == time_attr:
+                times = get_time_period()
+                return question(render_template(attr_map[last], aval_time_periods=times))
+            else:
+                return question(render_template(attr_map[last]))
     if not attr_check():
         return question(render_template("noevents"))
-    response, card = alexa_response()
-    return question(response).simple_card(title="Events", content=card)
+
 
 
 @ask.intent("PassIntent")
@@ -117,6 +187,8 @@ def pass_intent(all_info_call=False):
     Returns:
         nothing. but modifies the session.attributes dict
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     last_q = session.attributes[last_attr]
     if last_q != radius_attr:
         next_q = attr_lst[attr_lst.index(last_q) + 1]
@@ -146,7 +218,33 @@ def help_intent():
     """
     Just prompts the user with the help template and then waits for an answer
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     return question(render_template("help"))
+
+@ask.intent("DetailHelpIntent")
+def help_intent():
+    """
+    Just prompts the user with the help template and then waits for an answer
+    """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
+    lst = []
+    for num, q in enumerate(attr_lst):
+        lst.append((num+1,q))
+    return question(render_template("detailHelp")).simple_card(title="Q&A Process"
+        , content=render_template("QandAProcess", steps=lst))
+
+@ask.intent("ListCommandsIntent")
+def help_intent():
+    """
+    Just prompts the user with the help template and then waits for an answer
+    """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
+    return question(render_template("allCommands", commands=command_list))\
+        .simple_card(title="List Of Commands", content=render_template("allCommandCard"
+            , commands=command_list))
 
 # note: the parameters have to have same syntax as the intent schema. Ie intent schema says there 
 # are 2 slots for a city intent and those have names "City" and "State". Therefore the arguments to 
@@ -157,6 +255,8 @@ def city_intent(City, State):
     Triggered when user says city and state. Then we record those and then ask the next question in
     the Q&A process
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     logging.debug(str(City) + " " + str(State))
     if not City or not State:
         return question(render_template("missedInput"))
@@ -166,7 +266,7 @@ def city_intent(City, State):
         return question(response).simple_card(title="Events", content=card)
 
     aval_periods_str = get_time_period()
-    session.attributes[last_attr] = time_attr
+    session.attributes[last_attr] = city_attr
     return question(render_template("timeQ", aval_time_periods=aval_periods_str))\
         .standard_card(title=City + ", " + State, text="Welcome to " + City + "!")
 
@@ -177,6 +277,8 @@ def time_period(timePeriod):
     """
     Triggered when the user says some sort of time frame. then asks next question in Q&A process
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     if not timePeriod:
         return question(render_template("missedInput", input=time_attr))
     date_tuple = get_time_period(timePeriod)
@@ -185,7 +287,7 @@ def time_period(timePeriod):
     if attr_check():
         response, card = alexa_response()
         return question(response).simple_card(title="Events", content=card)
-    session.attributes[last_attr] = cat_attr
+    session.attributes[last_attr] = time_attr
     content = "Events " + timePeriod + " in " + session.attributes[city_attr]
     return question(render_template('categoryQ')).simple_card(title="Current fields"
         , content=content)
@@ -197,6 +299,8 @@ def category():
     """
     Triggered when the user asks Alexa to list what are the categories
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     aval_categories = get_categories()
     cat_str = "...".join(aval_categories)
     return question(render_template("categorylist", categories=cat_str))\
@@ -208,12 +312,14 @@ def filter_category(cat, catTwo, catThree, catFour, catFive):
     """
     Triggered when user says no or 1 to five possible categories
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     final_cat = cat_lst_helper([cat, catTwo, catThree, catFour, catFive])
     session.attributes[cat_attr] = final_cat
     if attr_check():
         response, card = alexa_response()
         return question(response).simple_card(title="Events", content=card)
-    session.attributes[last_attr] = radius_attr
+    session.attributes[last_attr] = cat_attr
     if not cat and not catTwo and not catThree and not catFour and not catFive:
         final_cat_str = "no category filtering"
     else:
@@ -231,13 +337,15 @@ def radius(number):
     Q&A process and just checks to make sure all necessary attributes are done. If not, will
     ask user
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     if not number:
         return question(render_template("missedInput", input=radius_attr))
     session.attributes[radius_attr] = number
     params = session.attributes
     if attr_check():
         response, card = alexa_response()
-        return question(response).simple_card(title="Events", content=card)
+        return question(response).simple_card(title="Events in "+params[city_attr], content=card)
     for attr in attr_map:
         if attr not in session.attributes or session.attributes[attr] == None:
             session.attributes[last_attr] = attr
@@ -252,6 +360,8 @@ def all_info(timePeriod, cat, catTwo, catThree, catFour, catFive, number, City, 
     """
     Triggered when user just wants to skip Q&A process and asks Alexa directly 
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     params = session.attributes
     if timePeriod:
         params[time_period_attr] = timePeriod
@@ -274,7 +384,7 @@ def all_info(timePeriod, cat, catTwo, catThree, catFour, catFive, number, City, 
         if not attr_check():
             logging.debug("Something is wrong in AllInfoIntent")
         response, card = alexa_response()
-        return question(response).simple_card(title="Events", content=card)
+        return question(response).simple_card(title="Events in "+params[city_attr], content=card)
 
 @ask.intent("MoreInfoIntent")
 def more_info(partOne, partTwo, partThree, partFour, partFive, partSix, partSeven, date):
@@ -284,6 +394,8 @@ def more_info(partOne, partTwo, partThree, partFour, partFive, partSix, partSeve
     and then a date if user also says the date after the event or the date if there are multiple
     events with the same title on different dates
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     lst = [partOne, partTwo, partThree, partFour, partFive, partSix, partSeven]
     # this is the count of actual words received by the Alexa. Used in tiebreaker situations when 
     # we have same %'s of the words in lst matching to the utterance (title + start date)
@@ -329,36 +441,54 @@ def more_info(partOne, partTwo, partThree, partFour, partFive, partSix, partSeve
         return question(render_template("problem"))
 
     elif results:
+        session.attributes[last_attr] = more_q
         title = results[0][2]
-        event_ids = list(session.attributes[titles_attr][title].keys())
-        event_dict = session.attributes[titles_attr][title]
-        session.attributes[results_attr] = results[0][2]
-        details = []
-        if len(event_ids) > 1:
-            for count, e_id in enumerate(event_ids):
-                deets = event_dict[e_id]
-                details.append((count, deets[0], deets[1], deets[2], deets[3], deets[5]))
-
-            return question(render_template("multiDetail", title=clean([title]),num=len(details)
-                , events=details)).standard_card(title=title
-                    , text=render_template("multiDetailCard", desc=details[0][4], events=details))          
-        else:
-            deets = event_dict[event_ids[0]]
-            session.attributes[dest_attr] = (deets[2], deets[4])
-            # making this a list just to make it easier to unpack this tuple into my template.
-            # unpacking via a for loop. thus need to wrap my tuple into a list even though there 
-            # will be only 1 element in this list
-            details.append((deets[0], deets[1], deets[2], deets[3], deets[5]))
-            print(len(details))
-            response = render_template("detailResponse", title=clean([title]), start= details[0][0]\
-                , end=details[0][1], venue=details[0][2])
-            if not deets[4]:
-                return question(response).standard_card(title=title
-                    , text=render_template("detailCard", events=details))
-            return question(response).standard_card(title=title, text=render_template("detailCard"
-                    , events=details))
+        response, card = more_info_helper(title)
+        return question(response).standard_card(title=title, text=card)
     else:
         return question(render_template("problem"))
+
+def more_info_helper(title):
+    """
+    Helper function that takes the title of the desired event we want more info on and then
+    populates the appriorate templates for another function to properly return a response to user
+    Args:
+        TITLE: title of the event we want more info on
+    Returns:
+        alexa audio and card rendered templates
+    """
+    event_ids = list(session.attributes[titles_attr][title].keys())
+    event_dict = session.attributes[titles_attr][title]
+    session.attributes[results_attr] = title
+    details = []
+    if len(event_ids) > 1:
+        for count, e_id in enumerate(event_ids):
+            deets = event_dict[e_id]
+            details.append((count, deets[0], deets[1], deets[2], deets[3], deets[5]))
+        response = render_template("multiDetail", title=clean([title]),num=len(details)
+            , events=details)
+        card = render_template("multiDetailCard", desc=details[0][4], events=details)
+        return response, card
+        # return question(render_template("multiDetail", title=clean([title]),num=len(details)
+        #     , events=details)).standard_card(title=title
+        #         , text=render_template("multiDetailCard", desc=details[0][4], events=details))          
+    else:
+        deets = event_dict[event_ids[0]]
+        session.attributes[dest_attr] = (deets[2], deets[4])
+        # making this a list just to make it easier to unpack this tuple into my template.
+        # unpacking via a for loop. thus need to wrap my tuple into a list even though there 
+        # will be only 1 element in this list
+        details.append((deets[0], deets[1], deets[2], deets[3], deets[5]))
+        print(len(details))
+        response = render_template("detailResponse", title=clean([title]), start= details[0][0]\
+            , end=details[0][1], venue=details[0][2])
+        card = render_template("detailCard", events=details)
+        return response, card
+        # if not deets[4]:
+        #     return question(response).standard_card(title=title
+        #         , text=render_template("detailCard", events=details))
+        # return question(response).standard_card(title=title, text=render_template("detailCard"
+        #         , events=details))
 
 
 @ask.intent("DescriptionIntent")
@@ -366,6 +496,8 @@ def read_desc():
     """
     Triggered by user if she/he wants Alexa to read out the description text (if available)
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     params = session.attributes
     if results_attr not in params or params[results_attr] == None:
         return question(render_template("problem"))
@@ -382,34 +514,41 @@ def get_distance(transit):
     triggered when user says get distance. if not start location has been given in this session it
     will prompt user for it.
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     params = session.attributes
     if dest_attr not in params:
         return question(render_template("requestDest"))
+    params[last_attr] = dis_attr
     if loc_attr not in params:
-        session.attributes[last_attr] = dis_attr
         return question(render_template("startLoc"))
-    response, card, static_map = dist_dir_helper()
-    return question(response).standard_card(title="Directions to " + params[dest_attr][0]
-        , text=card, small_image_url=static_map[0], large_image_url=static_map[1])
+
+    return question(render_template("startLocQ", loc=params[loc_attr]))
 
 
 @ask.intent("LocationIntent")
 def input_start_loc(addr, city, state):
     """
-    triggered when the user inputs their location. if get distance was the last intent then it will
+    triggered when the user inputs their location or says keep location if during this session has
+    already entered a starting location. if get distance was the last intent then it will
     auto output the distance and the directions on the alexa card
     """
+    if not id_check():
+        raise ValueError("Invalid Application ID")
     params = session.attributes
     lst = [addr, city, state]
     full_addr = ""
-    if not addr or not city:
+    if (not addr or not city):
         return question(render_template("problem"))
-    if session.attributes[last_attr] == dis_attr:
+    if dest_attr not in params or not params[dest_attr]:
+        return question(render_template("requestDest"))
+    if params[last_attr] == dis_attr:
         for el in lst:
             if el:
                 full_addr += el
-        session.attributes[loc_attr] = full_addr.replace(" ","+")
+        params[loc_attr] = full_addr.replace(" ","+")
         response, card, static_map = dist_dir_helper()
+        params[last_attr] = location_q
         return question(response).standard_card(title="Directions to " + params[dest_attr][0]
             , text=card, small_image_url=static_map[0], large_image_url=static_map[1])
 
@@ -512,6 +651,7 @@ def alexa_response():
     url = build_eventful_url(params[city_attr], mile_radius=params[radius_attr]
         , date_start=date_start, date_end=date_end, cat=params[cat_attr])
     print(url)
+    eventquery = EventQuery()
     # adds the url to the eventquery object
     eventquery.add_query(url)
     # queries that url to get info
@@ -522,6 +662,7 @@ def alexa_response():
     session.attributes[titles_attr] = events
     num_events = len(clean_titles)
     # return question(render_template("testResponse"))
+    params[last_attr] = radius_attr
     audio = render_template("response", events=clean_titles, num=num_events, city=params[city_attr])
     card = render_template("responseCard", events=list(events.keys()), num=num_events
         , city=params[city_attr])

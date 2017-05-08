@@ -16,6 +16,12 @@
       "intent": "DescriptionIntent"
     },
     {
+      "intent": "ListCommandsIntent"
+    },
+    {
+      "intent": "DetailHelpIntent"
+    },
+    {
       "intent": "DistanceIntent",
       "slot": [
         {
@@ -179,6 +185,12 @@
     },
     {
       "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "DetailHelpIntent"
+    },
+    {
+      "intent": "ListCommandsIntent"
     },
     {
       "intent": "AMAZON.StopIntent"

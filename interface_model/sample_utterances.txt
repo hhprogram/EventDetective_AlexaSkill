@@ -1,9 +1,6 @@
 #note (don't add) - commas cause parse errors (actually i think any type of punctuation except for
 #Valid punctuation marks are periods for abbreviations, possesive apostrophes and hyphens
 CityIntent {City} {State}
-CityIntent How about {City} {State}
-CityIntent What's good in {City} {State}
-CityIntent What's happening in {City} {State}
 TimePeriodIntent {timePeriod}
 TimePeriodIntent {timePeriod} through sunday
 TimePeriodIntent all of {timePeriod}
@@ -36,11 +33,9 @@ AllInfoIntent What's good around {City} {State}
 AllInfoIntent What's good {timePeriod} in {City} {State}
 AllInfoIntent What's good {timePeriod} for {cat} events within {number} miles of {City} {State}
 AllInfoIntent Are there any {cat} or {catTwo} events happening {timePeriod} within {number} miles of {City} {State}
+AllInfoIntent What's happening in {City} {State}
 AllInfoIntent Are there any {cat} events happening {timePeriod} within {number} miles of {City} {State}
 AllInfoIntent Are there any {cat} or {catTwo} or {catThree} or {catFour} or {catFive} events happening {timePeriod} within {number} miles of {City} {State}
-AMAZON.HelpIntent help
-AMAZON.HelpIntent help me
-AMAZON.HelpIntent help me what's good
 PassIntent pass
 PassIntent I don't care
 RestartIntent restart the process
@@ -70,3 +65,4 @@ LocationIntent my location is {addr} {city}
 LocationIntent {addr} {city}
 LocationIntent the starting address is {addr} {city}
 LocationIntent I'm at {addr} {city}
+LocationIntent keep location

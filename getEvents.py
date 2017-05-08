@@ -90,7 +90,9 @@ def get_time_period(time_period=None):
         if argument left as None then returns the time periods that are currently supported
     """
     if not time_period:
-        return ['this week through sunday', 'all of next week', 'from today to end of month']
+        return ['this week...which is today through Sunday'
+            , 'next week....which is the up coming Monday through Sunday'
+            , 'this month...today through the end of this month']
     today = datetime.date.today()
     weekday = today.weekday()
     if time_period == "this week":
@@ -170,13 +172,14 @@ def build_eventful_url(city, mile_radius=25, page_size=10, sort_order=sort_optio
         date_field = date_start_str + "-" + date_end_str
     if cat:
         print(cat)
-        cat_query = category_url
         if excl_cat:
+            cat_query = ex_category_url
             category = ','.join(cat)
         else:
+            cat_query = category_url
             category = ','.join(cat)
     else:
-        cat_query = ex_category_url
+        cat_query = category_url
         category = ''
     fields = {}
     fields['city'] = city
