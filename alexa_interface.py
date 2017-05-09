@@ -721,6 +721,7 @@ def fill_in_nones(events):
                 event_attrs[3] = "No description listed"
             else:
                 event_attrs[3] = clean_str(event_attrs[3])
+            event_attrs[2] = clean_str(event_attrs[2])
             new_events[new_event][e_id] = event_attrs
     return new_events
 
