@@ -4,7 +4,7 @@
 # quotes which is good because only within dbl quotes does \n not escaped and thus dentoes a new 
 # line character (syntax seems to get pretty confused though)
 welcome: >
-  What's good with you?...Let's begin ... you can either go through our Q and A process by 
+  Let's find you something to do!...Let's begin ... you can either go through our Q and A process by 
   responding with the city and state you are interested in or say help...note for best experience 
   you can open the Alexa app and view the Alexa cards with each response
 help: > 
@@ -59,4 +59,4 @@ welcomeContent: "Thanksfor trying What's Good! \
 availableCats: "Available categories to choose from: \n {% for cat in cats %} {{cat}} \n {% endfor %}"
 distanceCard: "Travel time: {{time}} \n Distance: {{distance}} \n Directions: \n {% for num, step in directions %} Step {{num}}: {{step}} \n {% endfor%}"
 allCommandCard: "{% for command, example, result in commands %} {{ command }} command which prompts the user with {{result}} \n Example: {{example}} {% endfor %}"
-QandAProcess: "Q&A process will ask you about the following in this order: \n {% num,step in steps %} Step {{num}}: step \n {% endfor %}"
+QandAProcess: "Q&A process will ask you about the following in this order: \n {% for num, step in steps %} Step {{num}}: {{step}} \n {% endfor %}"

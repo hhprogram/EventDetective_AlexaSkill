@@ -41,7 +41,7 @@ dest_attr = "dest_loc"
 prev_attr = "prev_city"
 # mapping between the attributes and what template the user should be prompted with if that attr 
 # doesn't have a value
-attr_map = {cat_attr: "categoryQ", time_attr: "timeQ", city_attr: "missedInput"
+attr_map = {cat_attr: "categoryQ", time_attr: "timeQ", city_attr: "welcome"
     , radius_attr: "radiusQ"}
 location_q = "distance/directions response"
 # used to denote that last thing alexa said was the more info response
@@ -141,36 +141,40 @@ def back_intent():
     if not id_check():
         raise ValueError("Invalid Application ID")
     params = session.attributes
-    if city_attr in session.attributes:
+    # if city_attr in session.attributes:
+    last = params[last_attr]
+    if last == more_q:
+        events = params[titles_attr]
+        lst = []
+        # don't call alexa_response again as want to get the same list of events and conserve
+        # time and not have to requery the api
+        for count, title in enumerate(events.keys()):
+            lst.append((count,title))
+        response = render_template("response", events=lst, num=len(events)
+            , city=params[city_attr])
+        card = render_template("responseCard", num=len(events), city=params[city_attr])
+        return question(response).simple_card(title="Events in "+params[city_attr]
+            , content=card)
+    if last == location_q:
+        title = params[results_attr]
+        response, card = more_info_helper(title)
+        params[last_attr] = more_q
+        return question(response).standard_card(title=title, text=card)
+    if last == city_attr:
+        print("HOALJDSsk")
+        return question(render_template(attr_map[last]))
+    else:
+        if last == radius_attr:
+            return question(render_template("radiusQ"))
+        params[last_attr] = attr_lst[attr_lst.index(last) - 1]
         last = params[last_attr]
-        if last == more_q:
-            events = params[titles_attr]
-            lst = []
-            # don't call alexa_response again as want to get the same list of events and conserve
-            # time and not have to requery the api
-            for count, title in enumerate(events.keys()):
-                lst.append((count,title))
-            response = render_template("response", events=lst, num=len(events)
-                , city=params[city_attr])
-            card = render_template("responseCard", num=len(events), city=params[city_attr])
-            return question(response).simple_card(title="Events in "+params[city_attr]
-                , content=card)
-        if last == location_q:
-            title = params[results_attr]
-            response, card = more_info_helper(title)
-            params[last_attr] = more_q
-            return question(response).standard_card(title=title, text=card)
-        if params[last_attr] == city_attr:
-            return question(render_template(attr_map[last], input=city_attr))
+        if params[last_attr] == cat_attr:
+            times = get_time_period()
+            return question(render_template(attr_map[last], aval_time_periods=times))
         else:
-            params[last_attr] = attr_lst[attr_lst.index(last) - 1]
-            if params[last_attr] == time_attr:
-                times = get_time_period()
-                return question(render_template(attr_map[last], aval_time_periods=times))
-            else:
-                return question(render_template(attr_map[last]))
-    if not attr_check():
-        return question(render_template("noevents"))
+            return question(render_template(attr_map[last]))
+    # if not attr_check():
+    #     return question(render_template("noevents"))
 
 
 
@@ -192,16 +196,24 @@ def pass_intent(all_info_call=False):
     last_q = session.attributes[last_attr]
     if last_q != radius_attr:
         next_q = attr_lst[attr_lst.index(last_q) + 1]
-    if last_q == city_attr:
-        return question(render_template(attr_map[city_attr], input=city_attr))
-    elif last_q == time_attr:
-        date_tuple = get_time_period(time_default)
-        session.attributes[time_attr] = str(date_tuple[0]), str(date_tuple[1])
-        session.attributes[time_period_attr] = time_default
-    elif last_q == cat_attr:
-        session.attributes[cat_attr] = cat_defaut
-    elif last_q == radius_attr:
+        print(next_q)
+    else:
         session.attributes[radius_attr] = radius_default
+        response, card = alexa_response()
+        return question(response).simple_card(title="Events", content=card)    
+    if last_q == city_attr:
+        return question(render_template("missedInput", input=last_q))
+    else:
+        session.attributes[last_attr] = next_q
+        if last_q == time_attr:
+            date_tuple = get_time_period(time_default)
+            session.attributes[time_attr] = str(date_tuple[0]), str(date_tuple[1])
+            session.attributes[time_period_attr] = time_default
+            return question(render_template(attr_map[next_q]))
+        elif last_q == cat_attr:
+            session.attributes[cat_attr] = cat_defaut
+            return question(render_template(attr_map[next_q]))
+        
     if attr_check():
         response, card = alexa_response()
         return question(response).simple_card(title="Events", content=card)
@@ -232,6 +244,7 @@ def help_intent():
     lst = []
     for num, q in enumerate(attr_lst):
         lst.append((num+1,q))
+    print(lst)
     return question(render_template("detailHelp")).simple_card(title="Q&A Process"
         , content=render_template("QandAProcess", steps=lst))
 
@@ -266,7 +279,7 @@ def city_intent(City, State):
         return question(response).simple_card(title="Events", content=card)
 
     aval_periods_str = get_time_period()
-    session.attributes[last_attr] = city_attr
+    session.attributes[last_attr] = time_attr
     return question(render_template("timeQ", aval_time_periods=aval_periods_str))\
         .standard_card(title=City + ", " + State, text="Welcome to " + City + "!")
 
@@ -287,7 +300,7 @@ def time_period(timePeriod):
     if attr_check():
         response, card = alexa_response()
         return question(response).simple_card(title="Events", content=card)
-    session.attributes[last_attr] = time_attr
+    session.attributes[last_attr] = cat_attr
     content = "Events " + timePeriod + " in " + session.attributes[city_attr]
     return question(render_template('categoryQ')).simple_card(title="Current fields"
         , content=content)
@@ -319,7 +332,7 @@ def filter_category(cat, catTwo, catThree, catFour, catFive):
     if attr_check():
         response, card = alexa_response()
         return question(response).simple_card(title="Events", content=card)
-    session.attributes[last_attr] = cat_attr
+    session.attributes[last_attr] = radius_attr
     if not cat and not catTwo and not catThree and not catFour and not catFive:
         final_cat_str = "no category filtering"
     else:
@@ -605,11 +618,27 @@ def clean(lst):
     clean_lst = []
     for element in lst:
         new = element.replace("&", "and")
+        new = new.replace("quot;", '"')
         clean_lst.append(new + "...")
     return clean_lst
 
 def clean_str(string):
-    new_str = string.replace("&", " and ")
+    """
+    cleans string by converting the given string and any ascii encodings into regular strings as 
+    well as switching and for &. Use a list as think concatenating strs like this is more efficient
+    """
+    lst = []
+    for word in string.split(" "):
+        if '&#' in word:
+            index = word.find('&#')
+            ascii_value = int(word[index+2:index+4])
+            print(word)
+            word = word.replace(word[index:index+5], chr(ascii_value))
+            print(word)
+        lst.append(word)
+    new_str = " ".join(lst)
+    new_str = new_str.replace("&", " and ")
+    new_str = new_str.replace("quot;", '"')
     return new_str
 
 def city_check():
@@ -658,6 +687,7 @@ def alexa_response():
     eventquery.query_url(api_domain)
     # gets a list of details for each event returned from that query
     events = eventquery.get_overview(api_domain)
+    events = fill_in_nones(events)
     clean_titles = clean([element for element in events])
     session.attributes[titles_attr] = events
     num_events = len(clean_titles)
@@ -668,6 +698,31 @@ def alexa_response():
         , city=params[city_attr])
     return (audio, card)
 
+def fill_in_nones(events):
+    """
+    helper method to fill in nones for certain event fields with something more user understandable
+    mutates EVENTS
+    First most loop through each event title. Then loop through each unique event id per event title
+    and then go to the oneth and 3rd index of the value associated with that unique event id key
+    and check if they are Nones
+    Returns:
+        New dictionary with new keys that have been cleaned to be in SSML format
+    """
+    new_events = {}
+    for event in events:
+        new_event = clean_str(event)
+        new_events[new_event] = {}
+        event_dict = events[event]
+        for e_id in event_dict:
+            event_attrs = event_dict[e_id]
+            if event_attrs[1] == None:
+                event_attrs[1] = "No end time listed"
+            if event_attrs[3] == None:
+                event_attrs[3] = "No description listed"
+            else:
+                event_attrs[3] = clean_str(event_attrs[3])
+            new_events[new_event][e_id] = event_attrs
+    return new_events
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -16,14 +16,8 @@
       "intent": "DescriptionIntent"
     },
     {
-      "intent": "ListCommandsIntent"
-    },
-    {
-      "intent": "DetailHelpIntent"
-    },
-    {
       "intent": "DistanceIntent",
-      "slot": [
+      "slots": [
         {
           "name": "transit",
           "type": "TRANSIT"

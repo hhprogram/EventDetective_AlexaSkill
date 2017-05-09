@@ -46,6 +46,11 @@ MoreInfoIntent More info on {partOne} {partTwo}
 MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour} {partFive} {partSix} {partSeven}
 MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour}
 MoreInfoIntent More info on {partOne} {partTwo} {partThree} {partFour}
+MoreInfoIntent More info {partOne}
+MoreInfoIntent More info {partOne} {partTwo}
+MoreInfoIntent More info {partOne} {partTwo} {partThree} {partFour} {partFive} {partSix} {partSeven}
+MoreInfoIntent More info {partOne} {partTwo} {partThree} {partFour}
+MoreInfoIntent More info {partOne} {partTwo} {partThree} {partFour}
 BackIntent go back
 BackIntent back
 DescriptionIntent Describe the event
@@ -66,3 +71,8 @@ LocationIntent {addr} {city}
 LocationIntent the starting address is {addr} {city}
 LocationIntent I'm at {addr} {city}
 LocationIntent keep location
+LocationIntent change location to {addr} {city} {state}
+LocationIntent change location to {city} {state}
+DetailHelpIntent q and a help
+DetailHelpIntent question and answer help
+ListCommandsIntent list all commands
