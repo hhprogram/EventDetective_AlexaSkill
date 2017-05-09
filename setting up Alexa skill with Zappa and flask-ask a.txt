@@ -1,0 +1,24 @@
+setting up Alexa skill with Zappa and flask-ask a few notes:
+1.) need to sudo pip install virtualenv. I think my initial install of conda was messing something
+up and thus since Zappa needs an active virtual env it wasn't working
+2.) Then when trying to test the lambda function it kept saying in the AWS lambda function test 
+portal that certain files weren't present like :
+
+{
+  "errorMessage": "libssl.so.1.0.0: cannot open shared object file: No such file or directory",
+  "errorType": "ImportError"
+}﻿
+
+This seems to mean the necessary dependency files weren't in the directory that was deployed with 
+zappa (not sure why). So I just located this file on local machine and put it into the directoy that
+was deployed by zappa. Kept doing this for each file that would subsequently show up. Eventually
+worked. (must be better way?)
+
+3.) Then lastly, the https url given is the home address if in your alexa flask-ask app your have 
+something like : ask = Ask(app, "/EventDetective") then when setting up the https address in the 
+amazon alexa console you have to add /EventDetective to the end of the given url by Zappa to make 
+it work properly
+
+tutorial used as foundation:
+
+https://developer.amazon.com/blogs/post/8e8ad73a-99e9-4c0f-a7b3-60f92287b0bf/new-alexa-tutorial-deploy-flask-ask-skills-to-aws-lambda-with-zappa

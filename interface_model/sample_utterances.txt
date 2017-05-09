@@ -70,9 +70,9 @@ LocationIntent my location is {addr} {city}
 LocationIntent {addr} {city}
 LocationIntent the starting address is {addr} {city}
 LocationIntent I'm at {addr} {city}
-LocationIntent keep location
 LocationIntent change location to {addr} {city} {state}
 LocationIntent change location to {city} {state}
+KeepLocationIntent keep location
 DetailHelpIntent q and a help
 DetailHelpIntent question and answer help
 ListCommandsIntent list all commands

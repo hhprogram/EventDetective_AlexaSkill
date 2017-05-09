@@ -4,18 +4,20 @@
 # quotes which is good because only within dbl quotes does \n not escaped and thus dentoes a new 
 # line character (syntax seems to get pretty confused though)
 welcome: >
-  Let's find you something to do!...Let's begin ... you can either go through our Q and A process by 
-  responding with the city and state you are interested in or say help...note for best experience 
-  you can open the Alexa app and view the Alexa cards with each response
+  Welcome to Event Detective...you can either go through our Q and A process by 
+  responding with the city and state you are interested in or say help...for best experience 
+  open alexa app with view visual responses
 help: > 
   You can bypass the Q and A process by saying city, state, mile radius, category, time period
-  all in one sentence ... OR you can say something like What's good in New York, New York and the
+  all in one sentence ... OR you can say something like What's good around New York, New York and the
   rest of the fields will be set to some defaults. Lastly, at any time in the process you can say 
-  Q&A help or list all commands without ending your session...go ahead and try it now!
+  Q&A help without ending your session or say back and alexa will take you to the last response
+  ...go ahead and try it now!
 detailHelp: >
   Q&A process first asks city and state...then time frame...then filtering by category...then 
-  the mile radius you are interested in...then the top 10 events should be listed. Say 
-  list all commands if curious of all possible commands
+  the mile radius you are interested in...then the top 10 events should be listed. After naming 
+  a city in the Q&A process you may say pass for all other questions and a default value will 
+  be entered for you.
 allCommands: >
   {% for command, example, result in commands %} {{ command }} command which prompts the user with {{result}}...A way to trigger this is...{{example}} {% endfor %}
 timeQ: "What time frame would you like to choose from? {{ aval_time_periods }}"
@@ -54,7 +56,7 @@ welcomeTitle: "Welcome!"
 responseCard: "Top {{num}} Events for {{city}}: \n {% for event in events %} {{event}} \n ---\n{% endfor %}"
 detailCard: "{% for start, end, venue, desc, url in events %} Starts: {{start}} \n Ends: {{end}} \n Venue Name: {{venue}} \n Description: {{desc}} \n Event Url: {{url}} {% endfor %}"
 multiDetailCard: "The description for this event is: \n {{desc}} \n Below are the specific details for each occurence: \n{% for num, start, end, venue, desc, url in events %} Starts: {{start}} \n Ends: {{end}} \n Venue Name: {{venue}} \n Event Url: {{url}} \n ---\n{% endfor %}"
-welcomeContent: "Thanksfor trying What's Good! \
+welcomeContent: "Thanks for trying Event Detective! \
   \n Either say a city and state to get the Q&A process or say help"
 availableCats: "Available categories to choose from: \n {% for cat in cats %} {{cat}} \n {% endfor %}"
 distanceCard: "Travel time: {{time}} \n Distance: {{distance}} \n Directions: \n {% for num, step in directions %} Step {{num}}: {{step}} \n {% endfor%}"

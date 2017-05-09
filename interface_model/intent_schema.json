@@ -16,11 +16,14 @@
       "intent": "DescriptionIntent"
     },
     {
+      "intent": "KeepLocationIntent"
+    },
+    {
       "intent": "DistanceIntent",
       "slots": [
         {
           "name": "transit",
-          "type": "TRANSIT"
+          "type": "TRANSIT_TYPES"
         }
       ]
     },

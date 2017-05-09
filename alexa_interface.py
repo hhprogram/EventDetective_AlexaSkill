@@ -5,10 +5,9 @@ import logging
 import datetime
 from getEvents import EventQuery, get_time_period, get_categories, build_eventful_url
 from googMaps import get_all_map_info
-from http import HTTPStatus
 
 app = Flask(__name__)
-ask = Ask(app, "/WhatsGood")
+ask = Ask(app, "/EventDetective")
 logging.getLogger("flask_ask").setLevel(logging.DEBUG)
 api_domain = 'http://api.eventful'
 # ---alexa application id. used to verify if intents are truly meant for my skill
@@ -118,6 +117,15 @@ def skill_launch():
     card_txt = render_template("welcomeContent")
     return question(welcome).simple_card(title=card_title, content=card_txt)
 
+@ask.intent("AMAZON.StopIntent")
+def stop():
+    return statement("Stopping Event Detective - thank you and see you later")
+
+@ask.session_ended
+def session_ended():
+    logging.debug("sessions ended")
+    return "", 200
+
 @ask.intent("RestartIntent")
 def clear():
     """
@@ -156,6 +164,11 @@ def back_intent():
         return question(response).simple_card(title="Events in "+params[city_attr]
             , content=card)
     if last == location_q:
+        title = params[results_attr]
+        response, card = more_info_helper(title)
+        params[last_attr] = more_q
+        return question(response).standard_card(title=title, text=card)
+    if last == dis_attr:
         title = params[results_attr]
         response, card = more_info_helper(title)
         params[last_attr] = more_q
@@ -248,16 +261,16 @@ def help_intent():
     return question(render_template("detailHelp")).simple_card(title="Q&A Process"
         , content=render_template("QandAProcess", steps=lst))
 
-@ask.intent("ListCommandsIntent")
-def help_intent():
-    """
-    Just prompts the user with the help template and then waits for an answer
-    """
-    if not id_check():
-        raise ValueError("Invalid Application ID")
-    return question(render_template("allCommands", commands=command_list))\
-        .simple_card(title="List Of Commands", content=render_template("allCommandCard"
-            , commands=command_list))
+# @ask.intent("ListCommandsIntent")
+# def help_intent():
+#     """
+#     Just prompts the user with the help template and then waits for an answer
+#     """
+#     if not id_check():
+#         raise ValueError("Invalid Application ID")
+#     return question(render_template("allCommands", commands=command_list))\
+#         .simple_card(title="List Of Commands", content=render_template("allCommandCard"
+#             , commands=command_list))
 
 # note: the parameters have to have same syntax as the intent schema. Ie intent schema says there 
 # are 2 slots for a city intent and those have names "City" and "State". Therefore the arguments to 
@@ -564,6 +577,14 @@ def input_start_loc(addr, city, state):
         params[last_attr] = location_q
         return question(response).standard_card(title="Directions to " + params[dest_attr][0]
             , text=card, small_image_url=static_map[0], large_image_url=static_map[1])
+
+@ask.intent("KeepLocationIntent")
+def keep_loc():
+    params = session.attributes
+    params[last_attr] = dis_attr
+    response, card, static_map = dist_dir_helper()
+    return question(response).standard_card(title="Directions to " + params[dest_attr][0]
+        , text=card, small_image_url=static_map[0], large_image_url=static_map[1]) 
 
 
 def dist_dir_helper():
