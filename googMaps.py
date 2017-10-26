@@ -77,7 +77,8 @@ des_url = "&destinations="
 rows_key = "rows"
 elements_key = "elements"
 distance_key = "distance"
-duration_key = "duration_in_traffic"
+duration_key = "duration"
+duration_traf_key = "duration_in_traffic"
 text_key = "text"
 value_key = "value"
 fare_key = "fare"
@@ -104,7 +105,10 @@ def find_distance(start, end, transit_mode=None):
     json_response = json.loads(urllib.request.urlopen(dis_url).read().decode('utf-8'))
     travel_info = json_response[rows_key][0][elements_key][0]
     distance = travel_info[distance_key][text_key]
-    duration = travel_info[duration_key][text_key]
+    if duration_key in json_response:
+      duration = travel_info[duration_traf_key][text_key]
+    else:
+      duration = travel_info[duration_key][text_key]
     cost = None
     if fare_key in travel_info:
         cost = travel_info[fare_key]
@@ -175,6 +179,7 @@ def build_url(start, end, transit_mode):
     dist_url = g_api_base_url + dis_url + units_i + or_dis_url + start + des_url + end + trans_url \
         + transit + traffic_url + traffic + depart_url + depart + goog_dis_key
     direc_url = direc_url.replace(" ","+")
+    print("directions :"+ direc_url)
     dist_url = dist_url.replace(" ","+")
     return direc_url, dist_url
 
@@ -185,8 +190,8 @@ def get_all_map_info(start, end, transit_mode=None):
     Returns:
         (result from find_distance, results from find_directions, results from static_map)
     """
-    directions = find_directions(start, end)
-    distance = find_distance(start, end)
+    directions = find_directions(start, end, transit_mode)
+    distance = find_distance(start, end, transit_mode)
     static_map = find_map(start, end)
     return (distance, directions, static_map)
 
@@ -200,6 +205,7 @@ def get_all_map_info(start, end, transit_mode=None):
 # print(len(json_output['routes'][0]['legs']))
 if __name__ == "__main__":
   start = "2020 Bancroft way, berkeley"
-  end = "2020 Oregon St, Berkeley, CA 94703"
-  print(get_all_map_info(start, end))
+  end = "1700 steiner san francisco"
+  transit = "transit"
+  print(get_all_map_info(start, end,transit))
 

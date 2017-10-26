@@ -1,0 +1,43 @@
+Url: http://api.eventful.com/json/events/search?location=Berkeley&within=25&app_key=q3xRBWBq5WJc3qcG&page_size=10&sort_order=popularity&category=music,sports,family_fun_kids&date=future
+
+Events within 25 miles of Berkeley
+title: Jamey Johnson, Margo Price & Brent Cobb
+stop_time: None
+start_time: 2017-05-11 00:00:00
+---
+title: Flogging Molly & White Buffalo
+stop_time: None
+start_time: 2017-05-04 20:00:00
+---
+title: Wale
+stop_time: None
+start_time: 2017-05-13 21:00:00
+---
+title: John Legend
+stop_time: None
+start_time: 2017-05-27 19:30:00
+---
+title: Willie Nelson & Family
+stop_time: None
+start_time: 2017-05-05 20:00:00
+---
+title: Willie Nelson & Family
+stop_time: None
+start_time: 2017-05-06 20:00:00
+---
+title: Bruno Mars with Anderson .Paak
+stop_time: None
+start_time: 2017-11-03 20:00:00
+---
+title: James Taylor & Bonnie Raitt
+stop_time: None
+start_time: 2017-07-29 19:30:00
+---
+title: Willie Nelson & Family
+stop_time: None
+start_time: 2017-05-02 20:00:00
+---
+title: The Flaming Lips
+stop_time: None
+start_time: 2017-05-10 20:00:00
+---

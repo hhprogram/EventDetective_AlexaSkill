@@ -1,0 +1,93 @@
+{
+  "version": "1.0",
+  "response": {
+    "outputSpeech": {
+      "type": "PlainText",
+      "text": "These are the top 9 events:  WWE Raw...  Monster Jam...  Australia's Thunder From Down Under...  Willie Nelson and Family...  Wale...  The Flaming Lips...  Ryan Adams...  Trey Songz...  John Legend... "
+    },
+    "shouldEndSession": false
+  },
+  "sessionAttributes": {
+    "last_q": "radius",
+    "city": "Berkeley,california",
+    "event_titles": {
+      "Australia's Thunder From Down Under": {
+        "E0-001-100205374-9": [
+          "2017-05-10 20:00:00",
+          null,
+          "Cobb's Comedy Club",
+          null
+        ]
+      },
+      "John Legend": {
+        "E0-001-100188849-4": [
+          "2017-05-27 19:30:00",
+          null,
+          "Greek Theatre",
+          null
+        ]
+      },
+      "Monster Jam": {
+        "E0-001-097703647-0": [
+          "2017-02-18 19:00:00",
+          "2017-02-18 21:00:00",
+          "Oakland Alameda Coliseum",
+          "Featuring: Grave Digger driven by Dennis Anderson, Son-uva Digger driven by Ryan Anderson, Team Hot Wheels driven by Scott Buetow, Monster Energy driven by Coty Saucier, Bounty Hunter, Knucklehead driven by TBD, Jester driven by Matt Pagliarulo, Xtermigator driven by JR McNeal, Wrecking Crew driven by TBD, Rage driven by Cory Rummel, Barbarian driven by Devin Jones, OVER Bored, Trucks/drivers subject to change., \n\nSaturday February 18, 2:00PM-3:00PM\n Avoid the lines, skip the crowds and enjoy VIP access with the Total Access Pass for Monster Jam! A VERY limited number of tickets are set aside for the BIGGEST Monster Jam fans, so make sure to purchase NOW! Each Total Access Pass includes: -One (1) event ticket -Entry into the Party In The Pits -Exclusive entry for a private meet and greet in the party in the pits from 2-3 pm. Everything will be yours when you arrive at Monster Jam. Quantities are limited. Don&#39;t miss out-these will go fast! \n\n•Tickets start at $15\n•All day of show ticket prices at Market Demand rates. See ticketmaster.com for details.\n•Service charges, handling and facility fees may apply"
+        ]
+      },
+      "Ryan Adams": {
+        "E0-001-100465424-1": [
+          "2017-06-02 19:00:00",
+          null,
+          "Greek Theatre",
+          null
+        ]
+      },
+      "The Flaming Lips": {
+        "E0-001-099999949-0": [
+          "2017-05-10 20:00:00",
+          null,
+          "Fox Theater - Oakland",
+          null
+        ]
+      },
+      "Trey Songz": {
+        "E0-001-101341107-3": [
+          "2017-06-02 20:00:00",
+          null,
+          "Fox Theater - Oakland",
+          null
+        ]
+      },
+      "WWE Raw": {
+        "E0-001-095744789-0": [
+          "2016-10-10 16:30:00",
+          null,
+          "Oracle Arena",
+          null
+        ]
+      },
+      "Wale": {
+        "E0-001-100993724-6": [
+          "2017-05-13 21:00:00",
+          null,
+          "The Fillmore",
+          null
+        ]
+      },
+      "Willie Nelson & Family": {
+        "E0-001-094978190-2": [
+          "2017-05-05 20:00:00",
+          null,
+          "The Fillmore",
+          null
+        ]
+      }
+    },
+    "time": [
+      "2017-05-04",
+      "2017-05-07"
+    ],
+    "radius": 25
+  }
+}

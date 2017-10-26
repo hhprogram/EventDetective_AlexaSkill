@@ -3,6 +3,7 @@ import logging
 import json
 import datetime
 from googMaps import find_directions
+import requests
 logging.basicConfig(filename='example.log',level=logging.DEBUG)
 
 
@@ -208,11 +209,17 @@ def get_events(url):
     """
     # this returns a response object that i can read() or readline() - which returns bytes
     response = urllib.request.urlopen(url)
+    response = requests.get(url)
+    print(response.status_code, response.text)
+    if not response.text:
+        print("response empty")
+    else:
+        print(response.text)
     # then i decode the bytes into a JSON formated STR which i then load into a JSON object using
     # the loads() method. acts like a JSON object in which it is a dictionary and can refer to its 
     # keys and the value is the corresponding value in the JSON response. Remember the values 
     # in a JSON response are always str
-    json_output = json.loads(response.read().decode('utf-8'))
+    json_output = response.json()
     full_event_list = json_output[events_key][event_key]
     dict_events = {}
     for event in full_event_list:
@@ -475,7 +482,9 @@ if __name__ == "__main__":
     # events = get_events(city)
     # output = get_events("Indio", cat=["music"])
     # question = EventQuery()
-    # query = build_eventful_url("Berkeley", cat=["music", "sports","family_fun_kids"])
+    query = build_eventful_url("Berkeley", cat=["music", "sports","family_fun_kids"])[0]
+    events = get_events(query)
+    # print(events)
     # question.add_query(query)
     # question.query_all_urls()
     # question.write_output(eventful)
@@ -484,8 +493,8 @@ if __name__ == "__main__":
     # print(question.urls)
     # print(question.api_gets)
     # print(question.info)
-    lst = get_categories()
-    with open("categories.txt", "w") as f:
-        for cat in lst:
-            f.write(cat)
-            f.write("\n")
+    # lst = get_categories()
+    # with open("categories.txt", "w") as f:
+    #     for cat in lst:
+    #         f.write(cat)
+    #         f.write("\n")
